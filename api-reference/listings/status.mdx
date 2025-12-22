@@ -1,0 +1,90 @@
+---
+title: Get Listing Status
+api: GET /api/external/v1/listings/{externalReference}/status
+description: "Check the current status of a listing"
+---
+
+# Get Listing Status
+
+Check the current status of a listing by external reference.
+
+## Path Parameters
+
+<ParamField path="externalReference" type="string" required>
+  Your unique reference for this listing
+</ParamField>
+
+## Response
+
+<ResponseField name="data.listingId" type="string">
+  Okasie listing UUID
+</ResponseField>
+
+<ResponseField name="data.externalReference" type="string">
+  Your provided reference
+</ResponseField>
+
+<ResponseField name="data.status" type="string">
+  Current status: `active`, `pending`, `sold`, or `draft`
+</ResponseField>
+
+<ResponseField name="data.updatedAt" type="string">
+  ISO 8601 timestamp of last update
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -X GET "https://www.okasie.be/api/external/v1/listings/MY-REF-001/status" \
+  -H "Authorization: Bearer YOUR_API_SECRET"
+```
+
+```javascript Node.js
+const response = await fetch(
+  "https://www.okasie.be/api/external/v1/listings/MY-REF-001/status",
+  {
+    headers: {
+      Authorization: `Bearer ${process.env.PARTNER_SECRET}`,
+    },
+  }
+);
+
+const data = await response.json();
+console.log(data.data.status);
+```
+
+```python Python
+import os
+import requests
+
+url = "https://www.okasie.be/api/external/v1/listings/MY-REF-001/status"
+headers = {"Authorization": f"Bearer {os.getenv('PARTNER_SECRET')}"}
+
+response = requests.get(url, headers=headers)
+status = response.json()['data']['status']
+print(f"Listing status: {status}")
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success
+{
+  "data": {
+    "listingId": "0c52cae7-bcaa-4b37-be0d-1b78c92c5225",
+    "externalReference": "MY-REF-001",
+    "status": "active",
+    "updatedAt": "2024-10-05T09:12:01Z"
+  }
+}
+```
+</ResponseExample>
+
+## Error Responses
+
+| Status | Code | Description |
+|--------|------|-------------|
+| 401 | `UNAUTHORIZED` | Invalid or missing API key |
+| 404 | `NOT_FOUND` | Listing not found for this partner |
+
+<Tip>
+  Use this endpoint for quick status checks without fetching the full listing data.
+</Tip>

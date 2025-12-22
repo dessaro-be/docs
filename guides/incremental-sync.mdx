@@ -1,0 +1,242 @@
+---
+title: Incremental Sync
+description: "Best practices for syncing your inventory with Okasie"
+---
+
+# Incremental Sync
+
+Learn how to efficiently keep your Okasie listings in sync with your inventory system using incremental updates.
+
+## Why Incremental Sync?
+
+Instead of uploading your entire inventory every time, incremental sync allows you to:
+
+- **Reduce API calls** - Only sync what changed
+- **Faster updates** - Changes appear on Okasie within seconds
+- **Lower bandwidth** - Send only the delta
+- **Stay within rate limits** - Avoid hitting 120 req/min limits
+
+## Sync Strategies
+
+### 1. Timestamp-Based Sync (Recommended)
+
+Use the `updatedSince` parameter to fetch only listings changed since your last sync.
+
+```javascript
+async function incrementalSync(apiKey) {
+  // Get last sync timestamp from your database
+  const lastSync = await db.getLastSyncTimestamp();
+
+  // Fetch all listings updated since last sync
+  const response = await fetch(
+    `https://www.okasie.be/api/external/v1/listings?updatedSince=${lastSync}`,
+    {
+      headers: { Authorization: `Bearer ${apiKey}` }
+    }
+  );
+
+  const { data, pagination } = await response.json();
+
+  // Process each changed listing
+  for (const listing of data) {
+    await processListingChange(listing);
+  }
+
+  // Update sync timestamp
+  await db.setLastSyncTimestamp(new Date().toISOString());
+}
+```
+
+### 2. Full Inventory Comparison
+
+For systems without change tracking, compare full inventories:
+
+```javascript
+async function fullInventorySync(apiKey, localInventory) {
+  // Fetch all active listings from Okasie
+  const okasieListings = await fetchAllListings(apiKey);
+
+  // Create lookup maps
+  const okasieMap = new Map(
+    okasieListings.map(l => [l.externalReference, l])
+  );
+  const localMap = new Map(
+    localInventory.map(l => [l.reference, l])
+  );
+
+  const toCreate = [];
+  const toUpdate = [];
+  const toSold = [];
+
+  // Find new and updated listings
+  for (const [ref, local] of localMap) {
+    const existing = okasieMap.get(ref);
+    if (!existing) {
+      toCreate.push(local);
+    } else if (hasChanges(local, existing)) {
+      toUpdate.push(local);
+    }
+  }
+
+  // Find listings to mark as sold
+  for (const [ref, okasie] of okasieMap) {
+    if (!localMap.has(ref)) {
+      toSold.push(ref);
+    }
+  }
+
+  // Apply changes in batches
+  await bulkUpsert([...toCreate, ...toUpdate]);
+  await markAsSold(toSold);
+}
+```
+
+## Pagination for Large Inventories
+
+When fetching listings, always handle pagination:
+
+```javascript
+async function fetchAllListings(apiKey, params = {}) {
+  const listings = [];
+  let page = 1;
+  let hasMore = true;
+
+  while (hasMore) {
+    const response = await fetch(
+      `https://www.okasie.be/api/external/v1/listings?` +
+      new URLSearchParams({ ...params, page, pageSize: 200 }),
+      {
+        headers: { Authorization: `Bearer ${apiKey}` }
+      }
+    );
+
+    const { data, pagination } = await response.json();
+    listings.push(...data);
+
+    hasMore = page < pagination.totalPages;
+    page++;
+
+    // Small delay to respect rate limits
+    await sleep(100);
+  }
+
+  return listings;
+}
+```
+
+## Batch Updates with Bulk Upsert
+
+For efficiency, always use the bulk upsert endpoint:
+
+```javascript
+async function syncInventoryBatch(items, apiKey) {
+  // Split into chunks of 100
+  const chunks = chunkArray(items, 100);
+  const results = { success: 0, errors: [] };
+
+  for (const chunk of chunks) {
+    const response = await fetch(
+      'https://www.okasie.be/api/external/v1/listings/bulk-upsert',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ items: chunk })
+      }
+    );
+
+    const result = await response.json();
+    results.success += result.data.successCount;
+    results.errors.push(...result.data.errors);
+
+    // Delay between batches
+    await sleep(500);
+  }
+
+  return results;
+}
+```
+
+## Change Detection
+
+Implement smart change detection to avoid unnecessary updates:
+
+```javascript
+function hasChanges(local, existing) {
+  // Fields to compare (ignore metadata fields)
+  const compareFields = [
+    'title', 'price', 'mileage', 'status',
+    'description', 'options', 'images'
+  ];
+
+  for (const field of compareFields) {
+    if (JSON.stringify(local[field]) !== JSON.stringify(existing[field])) {
+      return true;
+    }
+  }
+
+  return false;
+}
+```
+
+## Handling Deletions
+
+When a car is sold or removed from your inventory:
+
+```javascript
+async function markListingsAsSold(references, apiKey) {
+  const results = [];
+
+  for (const ref of references) {
+    try {
+      const response = await fetch(
+        `https://www.okasie.be/api/external/v1/listings/${encodeURIComponent(ref)}`,
+        {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${apiKey}` }
+        }
+      );
+
+      results.push({ ref, success: response.ok });
+    } catch (error) {
+      results.push({ ref, success: false, error: error.message });
+    }
+  }
+
+  return results;
+}
+```
+
+## Scheduling Recommendations
+
+| Sync Type | Frequency | Use Case |
+|-----------|-----------|----------|
+| **Real-time** | On change | Price changes, new listings |
+| **Incremental** | Every 15 min | Regular inventory updates |
+| **Full sync** | Daily | Reconciliation, error recovery |
+
+## Error Recovery
+
+Implement retry logic with exponential backoff:
+
+```javascript
+async function syncWithRetry(fn, maxRetries = 3) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (attempt === maxRetries) throw error;
+
+      const delay = Math.pow(2, attempt) * 1000;
+      console.log(`Retry ${attempt} after ${delay}ms`);
+      await sleep(delay);
+    }
+  }
+}
+```
+
+<Tip>
+  Store the `updatedAt` timestamp from each listing to detect changes on both sides. This enables true bi-directional sync if needed.
+</Tip>

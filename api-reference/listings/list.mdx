@@ -1,0 +1,178 @@
+---
+title: List Listings
+api: GET /api/external/v1/listings
+description: "Retrieve paginated vehicle listings"
+---
+
+# List Listings
+
+Retrieve a paginated list of vehicle listings within your partner access scope.
+
+<ParamField query="page" type="integer" default="1">
+  Page number (1-based)
+</ParamField>
+
+<ParamField query="pageSize" type="integer" default="50">
+  Number of items per page (max 200)
+</ParamField>
+
+<ParamField query="status" type="string" default="active">
+  Filter by listing status: `active`, `pending`, `sold`, `draft`, or `all`
+</ParamField>
+
+<ParamField query="updatedSince" type="string">
+  ISO 8601 datetime for incremental sync (e.g., `2024-10-01T00:00:00Z`)
+</ParamField>
+
+<ParamField query="dealerId" type="string">
+  Filter by specific dealer profile UUID
+</ParamField>
+
+<ParamField query="parentDealerId" type="string">
+  Filter by parent dealer (includes all child locations)
+</ParamField>
+
+<ParamField query="locationCode" type="string">
+  Filter by location code (case-insensitive)
+</ParamField>
+
+## Response
+
+<ResponseField name="data" type="array">
+  Array of listing objects
+
+  <Expandable title="Listing object properties">
+    <ResponseField name="id" type="string">
+      Okasie listing UUID
+    </ResponseField>
+    <ResponseField name="dealerProfileId" type="string">
+      Dealer profile UUID
+    </ResponseField>
+    <ResponseField name="externalReference" type="string">
+      Your unique reference
+    </ResponseField>
+    <ResponseField name="title" type="string">
+      Listing title
+    </ResponseField>
+    <ResponseField name="status" type="string">
+      `active`, `pending`, `sold`, or `draft`
+    </ResponseField>
+    <ResponseField name="price" type="number">
+      Price in currency
+    </ResponseField>
+    <ResponseField name="currency" type="string">
+      ISO 4217 currency code (default: EUR)
+    </ResponseField>
+    <ResponseField name="brand" type="string">
+      Vehicle brand
+    </ResponseField>
+    <ResponseField name="model" type="string">
+      Vehicle model
+    </ResponseField>
+    <ResponseField name="year" type="integer">
+      Build year
+    </ResponseField>
+    <ResponseField name="mileage" type="integer">
+      Kilometers
+    </ResponseField>
+    <ResponseField name="location" type="object">
+      Location details with `postalCode`, `city`, `province`, `latitude`, `longitude`
+    </ResponseField>
+    <ResponseField name="images" type="array">
+      Array of image objects with `url` and `position`
+    </ResponseField>
+    <ResponseField name="dealer" type="object">
+      Dealer information
+    </ResponseField>
+    <ResponseField name="createdAt" type="string">
+      ISO 8601 creation timestamp
+    </ResponseField>
+    <ResponseField name="updatedAt" type="string">
+      ISO 8601 last update timestamp
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="pagination" type="object">
+  Pagination metadata
+
+  <Expandable title="Pagination properties">
+    <ResponseField name="page" type="integer">
+      Current page number
+    </ResponseField>
+    <ResponseField name="pageSize" type="integer">
+      Items per page
+    </ResponseField>
+    <ResponseField name="totalItems" type="integer">
+      Total number of items
+    </ResponseField>
+    <ResponseField name="totalPages" type="integer">
+      Total number of pages
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="meta" type="object">
+  Request metadata including partner info and applied filters
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -X GET "https://www.okasie.be/api/external/v1/listings?pageSize=50&status=active" \
+  -H "Authorization: Bearer YOUR_API_SECRET"
+```
+</RequestExample>
+
+<ResponseExample>
+```json Response
+{
+  "data": [
+    {
+      "id": "46c7f6c9-70f7-4f98-8c32-12f1a67c6f2e",
+      "dealerProfileId": "7f7f7f7f-7f7f-407f-a7f7-7f7f7f7f7f7f",
+      "externalReference": "ref-123",
+      "title": "Opel Corsa 1.2 Turbo",
+      "status": "active",
+      "price": 19995,
+      "currency": "EUR",
+      "brand": "Opel",
+      "model": "Corsa",
+      "year": 2021,
+      "mileage": 25000,
+      "fuelType": "petrol",
+      "transmission": "automatic",
+      "bodyType": "hatchback",
+      "location": {
+        "postalCode": "9000",
+        "city": "Gent",
+        "province": "Oost-Vlaanderen",
+        "latitude": 51.0543,
+        "longitude": 3.7174
+      },
+      "images": [
+        {"url": "https://cdn.okasie.be/images/46c7f6c9/main.jpg", "position": 0}
+      ],
+      "dealer": {
+        "id": "7f7f7f7f-7f7f-407f-a7f7-7f7f7f7f7f7f",
+        "companyName": "Auto Gent",
+        "locationCode": "DEX-GENT"
+      },
+      "createdAt": "2024-10-01T12:34:56Z",
+      "updatedAt": "2024-10-05T09:12:01Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "pageSize": 50,
+    "totalItems": 123,
+    "totalPages": 3
+  },
+  "meta": {
+    "partner": {
+      "id": "partner-id",
+      "name": "Partner Name"
+    }
+  }
+}
+```
+</ResponseExample>

@@ -1,0 +1,180 @@
+---
+title: Rate Limiting
+description: "Understand API rate limits and best practices"
+---
+
+# Rate Limiting
+
+The Okasie Partner API implements rate limiting to ensure fair usage and system stability.
+
+## Default Limits
+
+| Limit Type | Value |
+|------------|-------|
+| Requests per minute | 120 |
+| Window size | 60 seconds |
+| Burst allowance | Up to 5 req/s |
+
+<Note>
+  Need higher limits? Contact info@okasie.be to discuss custom rate limits for your integration.
+</Note>
+
+## Rate Limit Headers
+
+Every API response includes rate limit information:
+
+| Header | Description |
+|--------|-------------|
+| `X-RateLimit-Limit` | Maximum requests per window |
+| `X-RateLimit-Remaining` | Remaining requests in current window |
+| `X-RateLimit-Reset` | Unix timestamp when the window resets |
+
+### Example Response Headers
+
+```http
+X-RateLimit-Limit: 120
+X-RateLimit-Remaining: 115
+X-RateLimit-Reset: 1699876543
+```
+
+## Handling Rate Limits
+
+When you exceed the rate limit, you'll receive a `429 Too Many Requests` response:
+
+```json
+{
+  "error": {
+    "code": "RATE_LIMITED",
+    "message": "Too many requests",
+    "retryAt": "2024-10-05T10:15:30Z"
+  }
+}
+```
+
+The response includes a `Retry-After` header indicating seconds to wait:
+
+```http
+HTTP/1.1 429 Too Many Requests
+Retry-After: 15
+X-RateLimit-Limit: 120
+X-RateLimit-Remaining: 0
+X-RateLimit-Reset: 1699876543
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Implement exponential backoff">
+    When receiving 429 errors, wait and retry with increasing delays:
+
+    ```javascript
+    async function fetchWithRetry(url, options, maxRetries = 3) {
+      for (let i = 0; i < maxRetries; i++) {
+        const response = await fetch(url, options);
+
+        if (response.status === 429) {
+          const retryAfter = response.headers.get('Retry-After') || Math.pow(2, i);
+          await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+          continue;
+        }
+
+        return response;
+      }
+      throw new Error('Max retries exceeded');
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Track rate limit headers">
+    Monitor headers to avoid hitting limits:
+
+    ```javascript
+    const response = await fetch(url, options);
+    const remaining = parseInt(response.headers.get('X-RateLimit-Remaining'));
+
+    if (remaining < 10) {
+      console.warn('Approaching rate limit, slowing down...');
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Use bulk endpoints">
+    For large data sets, use `/listings/bulk-upsert` to process up to 100 items per request instead of individual calls.
+  </Accordion>
+
+  <Accordion title="Implement caching">
+    Cache responses where appropriate to reduce API calls.
+  </Accordion>
+
+  <Accordion title="Use incremental sync">
+    Use `updatedSince` parameter to only fetch changed data instead of full syncs.
+  </Accordion>
+</AccordionGroup>
+
+## Sync Scheduling Recommendations
+
+| Sync Type | Recommended Interval | Notes |
+|-----------|---------------------|-------|
+| Full sync | Daily (off-peak) | Use pagination with `pageSize=200` |
+| Incremental sync | Every 5-15 minutes | Use `updatedSince` parameter |
+| Real-time updates | As needed | Use individual PUT/DELETE calls |
+
+## Example: Rate-Limited Sync Script
+
+```python
+import os
+import time
+import requests
+
+def sync_listings():
+    base_url = "https://www.okasie.be/api/external/v1/listings"
+    headers = {"Authorization": f"Bearer {os.getenv('PARTNER_SECRET')}"}
+
+    page = 1
+    while True:
+        response = requests.get(
+            base_url,
+            params={"page": page, "pageSize": 200},
+            headers=headers
+        )
+
+        # Check rate limits
+        remaining = int(response.headers.get('X-RateLimit-Remaining', 100))
+        if remaining < 5:
+            reset_time = int(response.headers.get('X-RateLimit-Reset', 0))
+            wait_time = max(reset_time - time.time(), 1)
+            print(f"Rate limit low, waiting {wait_time}s...")
+            time.sleep(wait_time)
+
+        # Handle 429
+        if response.status_code == 429:
+            retry_after = int(response.headers.get('Retry-After', 60))
+            print(f"Rate limited, waiting {retry_after}s...")
+            time.sleep(retry_after)
+            continue
+
+        data = response.json()
+        process_listings(data['data'])
+
+        if page >= data['pagination']['totalPages']:
+            break
+
+        page += 1
+        time.sleep(0.5)  # Be nice to the API
+
+def process_listings(listings):
+    # Your processing logic here
+    pass
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Error Handling" icon="triangle-exclamation" href="/errors">
+    Handle API errors gracefully
+  </Card>
+  <Card title="Incremental Sync" icon="arrows-rotate" href="/guides/incremental-sync">
+    Efficient sync patterns
+  </Card>
+</CardGroup>

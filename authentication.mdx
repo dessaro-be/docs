@@ -1,0 +1,164 @@
+---
+title: Authentication
+description: "Learn how to authenticate with the Okasie Partner API"
+---
+
+# Authentication
+
+The Okasie Partner API uses **Bearer token authentication**. All requests must include a valid API secret.
+
+## Getting Your API Secret
+
+<Steps>
+  <Step title="Contact Okasie">
+    Email info@okasie.be with your company details and integration use case
+  </Step>
+  <Step title="Receive Credentials">
+    You'll receive your API secret and assigned dealer profile IDs
+  </Step>
+  <Step title="Store Securely">
+    Store your secret in environment variables or a secrets manager
+  </Step>
+</Steps>
+
+## Making Authenticated Requests
+
+Include your API secret in the `Authorization` header:
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://www.okasie.be/api/external/v1/listings" \
+  -H "Authorization: Bearer sk_partner_xxxxxxxxxxxxx"
+```
+
+```javascript Node.js
+const response = await fetch(
+  "https://www.okasie.be/api/external/v1/listings",
+  {
+    headers: {
+      Authorization: `Bearer ${process.env.PARTNER_SECRET}`,
+    },
+  }
+);
+```
+
+```python Python
+import os
+import requests
+
+headers = {"Authorization": f"Bearer {os.getenv('PARTNER_SECRET')}"}
+response = requests.get(
+    "https://www.okasie.be/api/external/v1/listings",
+    headers=headers
+)
+```
+</CodeGroup>
+
+### Alternative: X-API-Key Header
+
+You can also use the `X-API-Key` header:
+
+```bash
+curl -X GET "https://www.okasie.be/api/external/v1/listings" \
+  -H "X-API-Key: sk_partner_xxxxxxxxxxxxx"
+```
+
+## Scopes
+
+API secrets are granted specific scopes that control access:
+
+| Scope | Description |
+|-------|-------------|
+| `read:listings` | Read listings data |
+| `read:locations` | Read dealer location data |
+| `write:listings` | Create, update, and delete listings |
+
+<Note>
+  By default, new partners receive `read:listings` and `read:locations`.
+  Contact support to request `write:listings` scope.
+</Note>
+
+## Access Control
+
+Your API key may be restricted to specific dealer profiles:
+
+- **Global access**: Can access all listings (rare, for aggregators)
+- **Restricted access**: Can only access assigned dealer profiles and their children
+
+The response `meta.partner.access` shows your current access scope:
+
+```json
+{
+  "meta": {
+    "partner": {
+      "access": {
+        "scope": "restricted",
+        "rootProfileIds": ["8f8f8f8f-8f8f-408f-a8f8-8f8f8f8f8f8f"],
+        "profileIds": ["7f7f7f7f-7f7f-407f-a7f7-7f7f7f7f7f7f", "8f8f8f8f-8f8f-408f-a8f8-8f8f8f8f8f8f"]
+      }
+    }
+  }
+}
+```
+
+## Security Best Practices
+
+<Warning>
+  Never expose your API secret in client-side code or public repositories.
+</Warning>
+
+<AccordionGroup>
+  <Accordion title="Store secrets securely">
+    Use environment variables or a secrets manager like AWS Secrets Manager, HashiCorp Vault, or similar.
+
+    ```bash
+    # .env (never commit this file)
+    PARTNER_SECRET=sk_partner_xxxxxxxxxxxxx
+    ```
+  </Accordion>
+
+  <Accordion title="Rotate secrets regularly">
+    Contact support to rotate your API secret. Old secrets become invalid immediately after rotation.
+  </Accordion>
+
+  <Accordion title="Use HTTPS only">
+    All API requests must use HTTPS. HTTP requests will be rejected.
+  </Accordion>
+
+  <Accordion title="Monitor usage">
+    Include `X-Request-Id` in your requests for easier debugging and support.
+
+    ```bash
+    curl -H "X-Request-Id: req-12345" ...
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Authentication Errors
+
+| Status | Error Code | Description |
+|--------|------------|-------------|
+| 401 | `UNAUTHORIZED` | Missing or invalid API secret |
+| 403 | `PROFILE_FORBIDDEN` | Valid secret but no access to requested profile |
+
+### Example Error Response
+
+```json
+{
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Invalid or missing API key"
+  }
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Rate Limiting" icon="gauge" href="/rate-limiting">
+    Understand request limits
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/overview">
+    Start making API calls
+  </Card>
+</CardGroup>

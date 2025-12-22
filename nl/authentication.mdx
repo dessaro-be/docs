@@ -1,0 +1,112 @@
+---
+title: Authenticatie
+description: "Beveilig uw integratie met de Okasie Partner API"
+---
+
+# Authenticatie
+
+De Okasie Partner API gebruikt API-sleutels voor authenticatie. Elke partner krijgt een unieke geheime sleutel die toegang verleent tot hun toegewezen resources.
+
+## API-sleutelformaat
+
+Uw API-sleutel is een 64-karakter hexadecimale string:
+
+```
+a1b2c3d4e5f6...64 karakters...
+```
+
+<Warning>
+  Deel uw API-sleutel nooit in clientcode, Git-repositories of via onbeveiligde kanalen.
+</Warning>
+
+## Authenticatiemethoden
+
+### Bearer Token (Aanbevolen)
+
+Stuur uw API-sleutel in de `Authorization` header:
+
+```bash
+curl -X GET "https://www.okasie.be/api/external/v1/listings" \
+  -H "Authorization: Bearer UW_API_GEHEIM"
+```
+
+### X-API-Key Header
+
+Alternatief kunt u de `X-API-Key` header gebruiken:
+
+```bash
+curl -X GET "https://www.okasie.be/api/external/v1/listings" \
+  -H "X-API-Key: UW_API_GEHEIM"
+```
+
+## Toegangsbereiken (Scopes)
+
+API-sleutels hebben specifieke toegangsbereiken die bepalen welke operaties u kunt uitvoeren:
+
+| Scope | Beschrijving |
+|-------|--------------|
+| `read:listings` | Advertenties bekijken |
+| `read:locations` | Dealerlocaties bekijken |
+| `write:listings` | Advertenties aanmaken, bijwerken en verwijderen |
+
+<Note>
+  Schrijftoegang (`write:listings`) is standaard uitgeschakeld. Neem contact op met [info@okasie.be](mailto:info@okasie.be) om schrijftoegang aan te vragen.
+</Note>
+
+## Beveiligingspraktijken
+
+<CardGroup cols={2}>
+  <Card title="Gebruik omgevingsvariabelen" icon="leaf">
+    Sla API-sleutels nooit op in code
+    ```bash
+    export OKASIE_API_KEY="uw_geheim"
+    ```
+  </Card>
+  <Card title="Alleen HTTPS" icon="lock">
+    Alle API-aanroepen moeten HTTPS gebruiken
+  </Card>
+  <Card title="Roteer sleutels regelmatig" icon="rotate">
+    Vraag periodiek nieuwe sleutels aan en deactiveer oude
+  </Card>
+  <Card title="Controleer audit logs" icon="list-check">
+    Controleer API-gebruik voor ongeautoriseerde toegang
+  </Card>
+</CardGroup>
+
+## Profieltoegangscontrole
+
+Uw API-sleutel is gekoppeld aan specifieke dealerprofielen. U kunt alleen:
+
+- Advertenties bekijken/bewerken van dealers in uw toegangsbereik
+- Locaties beheren waartoe u toegang heeft
+
+### Hiërarchische toegang
+
+Als u toegang heeft tot een hoofddealer, heeft u automatisch toegang tot alle onderliggende locaties:
+
+```
+Hoofdbedrijf (uw toegang)
+├── Vestiging Antwerpen
+├── Vestiging Gent
+└── Vestiging Brussel
+```
+
+## Sleutelrotatie
+
+Om een nieuwe API-sleutel aan te vragen:
+
+1. Neem contact op met [info@okasie.be](mailto:info@okasie.be)
+2. Vermeld uw partner-ID
+3. De oude sleutel blijft 24 uur actief na uitgifte van de nieuwe
+
+<Tip>
+  Sla API-sleutels op in uw geheimenbeheer (bijv. AWS Secrets Manager, HashiCorp Vault) voor productieomgevingen.
+</Tip>
+
+## Foutafhandeling
+
+| HTTP Status | Foutcode | Beschrijving |
+|-------------|----------|--------------|
+| 401 | `UNAUTHORIZED` | Ongeldige of ontbrekende API-sleutel |
+| 403 | `FORBIDDEN` | Geen toegang tot deze resource |
+| 403 | `SCOPE_DENIED` | Vereist scope niet toegekend |

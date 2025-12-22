@@ -1,0 +1,68 @@
+---
+title: API Reference Overview
+description: "Complete reference for all Okasie Partner API endpoints"
+---
+
+# API Reference
+
+Welcome to the Okasie Partner API reference. Here you'll find detailed documentation for all available endpoints.
+
+## Base URL
+
+```
+https://www.okasie.be/api/external/v1
+```
+
+## Authentication
+
+All endpoints require Bearer token authentication:
+
+```bash
+Authorization: Bearer YOUR_API_SECRET
+```
+
+## Available Endpoints
+
+### Listings
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/listings` | [List all listings](/api-reference/listings/list) |
+| `PUT` | `/listings/{externalReference}` | [Create or update a listing](/api-reference/listings/upsert) |
+| `DELETE` | `/listings/{externalReference}` | [Mark listing as sold](/api-reference/listings/delete) |
+| `GET` | `/listings/{externalReference}/status` | [Get listing status](/api-reference/listings/status) |
+| `POST` | `/listings/bulk-upsert` | [Bulk create/update listings](/api-reference/listings/bulk-upsert) |
+
+### Locations
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/locations` | [List dealer locations](/api-reference/locations/list) |
+| `GET` | `/locations/{id}/listings` | [Get listings for a location](/api-reference/locations/listings) |
+
+## Common Response Headers
+
+All responses include rate limit information:
+
+| Header | Description |
+|--------|-------------|
+| `X-RateLimit-Limit` | Maximum requests per minute |
+| `X-RateLimit-Remaining` | Remaining requests in window |
+| `X-RateLimit-Reset` | Unix timestamp when window resets |
+
+## OpenAPI Specification
+
+This documentation is generated from our [OpenAPI specification](/openapi.yaml). You can use this spec to:
+
+- Generate client SDKs
+- Import into Postman or Insomnia
+- Set up API monitoring
+
+<CardGroup cols={2}>
+  <Card title="Listings API" icon="car" href="/api-reference/listings/list">
+    Manage vehicle listings
+  </Card>
+  <Card title="Locations API" icon="location-dot" href="/api-reference/locations/list">
+    Query dealer locations
+  </Card>
+</CardGroup>

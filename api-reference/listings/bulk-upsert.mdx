@@ -1,0 +1,217 @@
+---
+title: Bulk Create/Update Listings
+api: POST /api/external/v1/listings/bulk-upsert
+description: "Create or update up to 100 listings in a single request"
+---
+
+# Bulk Create/Update Listings
+
+Upsert up to 100 listings in a single request. Each item is processed independently, allowing partial success.
+
+<Note>
+  Requires the `write:listings` scope. Contact support to enable write access.
+</Note>
+
+## Request Body
+
+The request body can be either:
+
+1. An array of listing objects
+2. An object with an `items` property containing the array
+
+Each item must include `externalReference` plus all required listing fields.
+
+<ParamField body="items" type="array" required>
+  Array of listing objects (max 100 items)
+
+  <Expandable title="Item properties">
+    <ParamField body="externalReference" type="string" required>
+      Your unique reference for this listing
+    </ParamField>
+    <ParamField body="dealerProfileId" type="string">
+      Dealer profile UUID
+    </ParamField>
+    <ParamField body="dealerLocationCode" type="string">
+      Location code
+    </ParamField>
+    <ParamField body="status" type="string">
+      `active`, `pending`, `sold`, or `draft`
+    </ParamField>
+    <ParamField body="title" type="string" required>
+      Listing title
+    </ParamField>
+    <ParamField body="price" type="number">
+      Price (required for active/pending)
+    </ParamField>
+    <ParamField body="..." type="...">
+      All other fields from the single upsert endpoint
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Response
+
+<ResponseField name="data.successCount" type="integer">
+  Number of successfully processed items
+</ResponseField>
+
+<ResponseField name="data.errorCount" type="integer">
+  Number of failed items
+</ResponseField>
+
+<ResponseField name="data.results" type="array">
+  Array of successful results
+
+  <Expandable title="Result properties">
+    <ResponseField name="index" type="integer">
+      Position in the input array
+    </ResponseField>
+    <ResponseField name="externalReference" type="string">
+      Your reference
+    </ResponseField>
+    <ResponseField name="listingId" type="string">
+      Okasie listing UUID
+    </ResponseField>
+    <ResponseField name="status" type="string">
+      Listing status
+    </ResponseField>
+    <ResponseField name="created" type="boolean">
+      True if newly created
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="data.errors" type="array">
+  Array of failed items with error details
+
+  <Expandable title="Error properties">
+    <ResponseField name="index" type="integer">
+      Position in the input array
+    </ResponseField>
+    <ResponseField name="externalReference" type="string">
+      Your reference (if provided)
+    </ResponseField>
+    <ResponseField name="code" type="string">
+      Error code
+    </ResponseField>
+    <ResponseField name="message" type="string">
+      Error message
+    </ResponseField>
+    <ResponseField name="status" type="integer">
+      HTTP status code for this error
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -X POST "https://www.okasie.be/api/external/v1/listings/bulk-upsert" \
+  -H "Authorization: Bearer YOUR_API_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "items": [
+      {
+        "externalReference": "DEX-0001",
+        "dealerProfileId": "84118503-030b-45f3-a867-c77d54d00b4c",
+        "status": "active",
+        "title": "Jeep Compass 2019",
+        "price": 18500,
+        "brand": "Jeep",
+        "model": "Compass",
+        "year": 2019,
+        "mileage": 43700,
+        "fuelType": "petrol",
+        "postalCode": "9000",
+        "city": "Gent",
+        "province": "Oost-Vlaanderen"
+      },
+      {
+        "externalReference": "DEX-0002",
+        "dealerLocationCode": "DEX-GENT",
+        "status": "pending",
+        "title": "Renault Trafic",
+        "price": 26990,
+        "brand": "Renault",
+        "model": "Trafic",
+        "year": 2020,
+        "mileage": 65000,
+        "fuelType": "diesel",
+        "postalCode": "9000",
+        "city": "Gent",
+        "province": "Oost-Vlaanderen",
+        "images": ["https://partner.example/trafic.jpg"]
+      }
+    ]
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success
+{
+  "data": {
+    "successCount": 2,
+    "errorCount": 0,
+    "results": [
+      {
+        "index": 0,
+        "externalReference": "DEX-0001",
+        "listingId": "0c52cae7-bcaa-4b37-be0d-1b78c92c5225",
+        "status": "active",
+        "created": true
+      },
+      {
+        "index": 1,
+        "externalReference": "DEX-0002",
+        "listingId": "1d63dbf8-cdbb-5c48-cf1e-2c89d93d6336",
+        "status": "pending",
+        "created": true
+      }
+    ],
+    "errors": []
+  }
+}
+```
+
+```json Partial Success
+{
+  "data": {
+    "successCount": 1,
+    "errorCount": 1,
+    "results": [
+      {
+        "index": 0,
+        "externalReference": "DEX-0001",
+        "listingId": "0c52cae7-bcaa-4b37-be0d-1b78c92c5225",
+        "status": "active",
+        "created": true
+      }
+    ],
+    "errors": [
+      {
+        "index": 1,
+        "externalReference": "DEX-0002",
+        "code": "VALIDATION_FAILED",
+        "message": "Validation failed",
+        "status": 422,
+        "issues": [
+          {"path": "price", "message": "Required", "code": "invalid_type"}
+        ]
+      }
+    ]
+  }
+}
+```
+</ResponseExample>
+
+## Error Responses
+
+| Status | Code | Description |
+|--------|------|-------------|
+| 400 | `EMPTY_PAYLOAD` | No items provided |
+| 400 | `TOO_MANY_ITEMS` | More than 100 items |
+| 400 | `INVALID_JSON` | Invalid JSON body |
+
+<Tip>
+  For large imports, split your data into batches of 100 items and process them sequentially with a small delay between batches.
+</Tip>

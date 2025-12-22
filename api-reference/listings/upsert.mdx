@@ -1,0 +1,199 @@
+---
+title: Create/Update Listing
+api: PUT /api/external/v1/listings/{externalReference}
+description: "Create or update a vehicle listing"
+---
+
+# Create or Update Listing
+
+Upsert a vehicle listing by external reference. Creates a new listing if it doesn't exist, or updates the existing one.
+
+<Note>
+  Requires the `write:listings` scope. Contact support to enable write access.
+</Note>
+
+## Path Parameters
+
+<ParamField path="externalReference" type="string" required>
+  Your unique reference for this listing (max 64 characters)
+</ParamField>
+
+## Request Body
+
+<ParamField body="dealerProfileId" type="string">
+  Dealer profile UUID. Required if `dealerLocationCode` is not provided.
+</ParamField>
+
+<ParamField body="dealerLocationCode" type="string">
+  Location code. Required if `dealerProfileId` is not provided.
+</ParamField>
+
+<ParamField body="status" type="string" default="draft">
+  Listing status: `active`, `pending`, `sold`, or `draft`
+</ParamField>
+
+<ParamField body="title" type="string" required>
+  Listing title
+</ParamField>
+
+<ParamField body="description" type="string">
+  Detailed description (max 15,000 characters)
+</ParamField>
+
+<ParamField body="price" type="number">
+  Price in EUR. Required when status is `active` or `pending`.
+</ParamField>
+
+<ParamField body="brand" type="string">
+  Vehicle brand (e.g., "Opel", "Volkswagen")
+</ParamField>
+
+<ParamField body="model" type="string">
+  Vehicle model (e.g., "Corsa", "Golf")
+</ParamField>
+
+<ParamField body="year" type="integer">
+  Build year (1900 - current year + 1)
+</ParamField>
+
+<ParamField body="mileage" type="integer">
+  Kilometers driven
+</ParamField>
+
+<ParamField body="fuelType" type="string">
+  Fuel type: `petrol`, `diesel`, `electric`, `hybrid`, `lpg`, `cng`, `other`
+</ParamField>
+
+<ParamField body="transmission" type="string">
+  Transmission: `manual`, `automatic`, `semi-automatic`, `other`
+</ParamField>
+
+<ParamField body="bodyType" type="string">
+  Body type: `hatchback`, `sedan`, `suv`, `wagon`, `convertible`, `van`, `coupe`, `other`
+</ParamField>
+
+<ParamField body="postalCode" type="string">
+  Belgian postal code. Required for active listings.
+</ParamField>
+
+<ParamField body="city" type="string">
+  City name. Required for active listings.
+</ParamField>
+
+<ParamField body="province" type="string">
+  Province name. Required for active listings.
+</ParamField>
+
+<ParamField body="features" type="array">
+  Array of feature objects with `category` and `name`
+</ParamField>
+
+<ParamField body="images" type="array">
+  Array of image URLs or objects with `url` and `position`. Images are automatically mirrored to Okasie storage.
+</ParamField>
+
+## Response
+
+<ResponseField name="data.listingId" type="string">
+  Okasie listing UUID
+</ResponseField>
+
+<ResponseField name="data.externalReference" type="string">
+  Your provided reference
+</ResponseField>
+
+<ResponseField name="data.status" type="string">
+  Current listing status
+</ResponseField>
+
+<ResponseField name="data.created" type="boolean">
+  `true` if newly created, `false` if updated
+</ResponseField>
+
+<ResponseField name="data.warnings" type="object">
+  Optional warnings (e.g., skipped images)
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -X PUT "https://www.okasie.be/api/external/v1/listings/MY-REF-001" \
+  -H "Authorization: Bearer YOUR_API_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "dealerProfileId": "84118503-030b-45f3-a867-c77d54d00b4c",
+    "status": "active",
+    "title": "Opel Corsa 1.2 Turbo",
+    "description": "Compact city car in excellent condition",
+    "price": 19995,
+    "brand": "Opel",
+    "model": "Corsa",
+    "year": 2021,
+    "mileage": 25000,
+    "fuelType": "petrol",
+    "transmission": "automatic",
+    "bodyType": "hatchback",
+    "postalCode": "9000",
+    "city": "Gent",
+    "province": "Oost-Vlaanderen",
+    "features": [
+      {"category": "comfort", "name": "Airconditioning"},
+      {"category": "safety", "name": "ABS"}
+    ],
+    "images": [
+      "https://partner.example/car1.jpg",
+      {"url": "https://partner.example/car2.jpg", "position": 1}
+    ]
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success (201 Created)
+{
+  "data": {
+    "listingId": "0c52cae7-bcaa-4b37-be0d-1b78c92c5225",
+    "externalReference": "MY-REF-001",
+    "status": "active",
+    "created": true
+  }
+}
+```
+
+```json Updated (200 OK)
+{
+  "data": {
+    "listingId": "0c52cae7-bcaa-4b37-be0d-1b78c92c5225",
+    "externalReference": "MY-REF-001",
+    "status": "active",
+    "created": false
+  }
+}
+```
+
+```json With Warnings
+{
+  "data": {
+    "listingId": "0c52cae7-bcaa-4b37-be0d-1b78c92c5225",
+    "externalReference": "MY-REF-001",
+    "status": "active",
+    "created": true,
+    "warnings": {
+      "skippedImages": [
+        {"source": "https://broken-url.com/image.jpg", "reason": "mirror_failed"}
+      ]
+    }
+  }
+}
+```
+</ResponseExample>
+
+## Error Responses
+
+| Status | Code | Description |
+|--------|------|-------------|
+| 400 | `INVALID_TITLE` | Title is required |
+| 400 | `INVALID_PRICE` | Price required for active listings |
+| 400 | `INVALID_LOCATION` | postalCode, city, and province required |
+| 400 | `INVALID_PROFILE` | dealerProfileId or dealerLocationCode required |
+| 403 | `PROFILE_FORBIDDEN` | No access to requested profile |
+| 422 | `VALIDATION_FAILED` | Payload validation failed |

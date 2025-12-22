@@ -1,0 +1,245 @@
+---
+title: Image Handling
+description: "How Okasie processes and hosts your vehicle images"
+---
+
+# Image Handling
+
+Okasie automatically mirrors and optimizes images from your servers to ensure fast loading and consistent display across the platform.
+
+## How It Works
+
+When you submit a listing with image URLs:
+
+1. **Validation** - We verify each URL is accessible
+2. **Download** - Images are downloaded from your server
+3. **Optimization** - Images are resized and compressed
+4. **CDN Hosting** - Optimized images are served from our CDN
+5. **Caching** - Original URLs are cached for future updates
+
+```
+Your Server → Okasie API → Image Processing → Supabase Storage → CDN
+```
+
+## Submitting Images
+
+### Single Listing
+
+Include images in the `images` array when upserting:
+
+```javascript
+await fetch(`https://www.okasie.be/api/external/v1/listings/${ref}`, {
+  method: 'PUT',
+  headers: {
+    'Authorization': `Bearer ${apiKey}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    title: 'Volkswagen Golf 2020',
+    price: 24500,
+    images: [
+      'https://your-server.com/cars/vw-golf-front.jpg',
+      'https://your-server.com/cars/vw-golf-side.jpg',
+      'https://your-server.com/cars/vw-golf-interior.jpg',
+      'https://your-server.com/cars/vw-golf-dashboard.jpg'
+    ],
+    // ... other fields
+  })
+});
+```
+
+### Bulk Upsert
+
+Same format for bulk operations:
+
+```javascript
+const items = [
+  {
+    externalReference: 'VW-001',
+    title: 'Volkswagen Golf',
+    images: [
+      'https://your-server.com/cars/vw-golf-1.jpg',
+      'https://your-server.com/cars/vw-golf-2.jpg'
+    ]
+  },
+  {
+    externalReference: 'BMW-001',
+    title: 'BMW 3 Series',
+    images: [
+      'https://your-server.com/cars/bmw-3-1.jpg',
+      'https://your-server.com/cars/bmw-3-2.jpg'
+    ]
+  }
+];
+```
+
+## Image Requirements
+
+| Requirement | Specification |
+|-------------|--------------|
+| **Formats** | JPEG, PNG, WebP |
+| **Minimum size** | 800 x 600 pixels |
+| **Maximum size** | 20 MB per image |
+| **Maximum count** | 50 images per listing |
+| **URL accessibility** | Must be publicly accessible |
+
+<Warning>
+  Images behind authentication or requiring cookies will fail to download. Ensure your image URLs are publicly accessible.
+</Warning>
+
+## Image Processing
+
+### Automatic Optimization
+
+Okasie automatically:
+
+- **Resizes** to multiple dimensions (thumbnail, preview, full)
+- **Compresses** using modern codecs (WebP, AVIF)
+- **Strips metadata** for privacy
+- **Generates placeholders** for lazy loading
+
+### Generated Sizes
+
+| Size | Dimensions | Use Case |
+|------|------------|----------|
+| Thumbnail | 150 x 100 | Search results grid |
+| Preview | 400 x 300 | Listing cards |
+| Gallery | 800 x 600 | Detail page gallery |
+| Full | Original (max 2000px) | Lightbox view |
+
+## Image Order
+
+The first image in your array becomes the primary/cover image:
+
+```javascript
+images: [
+  'https://example.com/cover.jpg',     // Primary image
+  'https://example.com/angle-1.jpg',   // Gallery image 2
+  'https://example.com/angle-2.jpg',   // Gallery image 3
+  'https://example.com/interior.jpg',  // Gallery image 4
+]
+```
+
+<Tip>
+  Use your best exterior shot as the first image - it's displayed in search results and listing previews.
+</Tip>
+
+## Updating Images
+
+### Full Replacement
+
+Send the complete new image array to replace all images:
+
+```javascript
+// Old: ['img1.jpg', 'img2.jpg', 'img3.jpg']
+// New: ['new1.jpg', 'new2.jpg']
+
+await upsertListing(ref, {
+  images: ['new1.jpg', 'new2.jpg']
+});
+// Result: Only new1.jpg and new2.jpg
+```
+
+### Adding Images
+
+Include all existing images plus new ones:
+
+```javascript
+// Existing: ['img1.jpg', 'img2.jpg']
+// Add: ['img3.jpg', 'img4.jpg']
+
+await upsertListing(ref, {
+  images: ['img1.jpg', 'img2.jpg', 'img3.jpg', 'img4.jpg']
+});
+```
+
+### Reordering Images
+
+Simply send the images in the new desired order:
+
+```javascript
+// Move img3 to front
+await upsertListing(ref, {
+  images: ['img3.jpg', 'img1.jpg', 'img2.jpg']
+});
+```
+
+## Caching Behavior
+
+### URL-Based Caching
+
+Okasie caches images by URL. If you update an image on your server without changing the URL, add a cache-busting parameter:
+
+```javascript
+// Force re-download with timestamp
+images: [
+  `https://your-server.com/car.jpg?v=${Date.now()}`
+]
+```
+
+### CDN Cache Duration
+
+| Cache Type | Duration |
+|------------|----------|
+| Browser | 1 year |
+| CDN Edge | 30 days |
+| API response | Real-time |
+
+## Error Handling
+
+### Common Image Errors
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `IMAGE_FETCH_FAILED` | URL not accessible | Check URL accessibility |
+| `IMAGE_TOO_LARGE` | Exceeds 20 MB | Compress before upload |
+| `IMAGE_INVALID_FORMAT` | Unsupported format | Convert to JPEG/PNG/WebP |
+| `IMAGE_TOO_SMALL` | Below 800x600 | Use higher resolution |
+
+### Partial Success
+
+Image processing doesn't block listing creation. If some images fail:
+
+```json
+{
+  "data": {
+    "listingId": "abc-123",
+    "status": "active",
+    "imagesProcessed": 8,
+    "imagesFailed": 2,
+    "failedImages": [
+      {
+        "url": "https://example.com/broken.jpg",
+        "error": "IMAGE_FETCH_FAILED"
+      }
+    ]
+  }
+}
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Consistent Naming" icon="tag">
+    Use consistent, descriptive filenames that help with debugging
+  </Card>
+  <Card title="HTTPS Only" icon="lock">
+    Always use HTTPS URLs for security
+  </Card>
+  <Card title="Stable URLs" icon="link">
+    Keep image URLs stable; avoid temporary signed URLs
+  </Card>
+  <Card title="Pre-optimize" icon="gauge">
+    Compress images before sending to reduce processing time
+  </Card>
+</CardGroup>
+
+## CDN URLs
+
+After processing, images are available at:
+
+```
+https://[supabase-storage-url]/listings/[listing-id]/[image-hash].webp
+```
+
+The `images` array in listing responses contains these CDN URLs, not your original URLs.

@@ -1,0 +1,195 @@
+---
+title: Error Handling
+description: "API error codes and how to handle them"
+---
+
+# Error Handling
+
+The Okasie Partner API uses standard HTTP status codes and provides structured error responses.
+
+## Error Response Format
+
+All errors follow a consistent format:
+
+```json
+{
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human-readable error message"
+  }
+}
+```
+
+For validation errors, additional details are provided:
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Payload validation failed",
+    "issues": [
+      {
+        "path": "price",
+        "message": "Required",
+        "code": "invalid_type"
+      }
+    ]
+  }
+}
+```
+
+## HTTP Status Codes
+
+| Status | Meaning | Action |
+|--------|---------|--------|
+| `200` | Success | Process the response |
+| `201` | Created | Resource was created successfully |
+| `400` | Bad Request | Check your request format |
+| `401` | Unauthorized | Check your API secret |
+| `403` | Forbidden | You don't have access to this resource |
+| `404` | Not Found | Resource doesn't exist |
+| `422` | Validation Error | Check the `issues` array for details |
+| `429` | Rate Limited | Wait and retry with backoff |
+| `500` | Server Error | Retry later, contact support if persistent |
+
+## Error Codes Reference
+
+### Authentication Errors
+
+| Code | Status | Description | Solution |
+|------|--------|-------------|----------|
+| `UNAUTHORIZED` | 401 | Invalid or missing API key | Check your `Authorization` header |
+| `PROFILE_FORBIDDEN` | 403 | No access to requested profile | Contact support for access |
+
+### Validation Errors
+
+| Code | Status | Description | Solution |
+|------|--------|-------------|----------|
+| `INVALID_JSON` | 400 | Request body is not valid JSON | Check JSON syntax |
+| `INVALID_BODY` | 400 | Request body must be an object | Ensure you're sending a JSON object |
+| `INVALID_REFERENCE` | 400 | External reference is missing | Provide `externalReference` |
+| `VALIDATION_FAILED` | 422 | Payload validation failed | Check `issues` for specific fields |
+| `INVALID_TITLE` | 400 | Title is required | Provide a non-empty `title` |
+| `INVALID_PRICE` | 400 | Price required for active listings | Provide `price` when `status` is `active` |
+| `INVALID_LOCATION` | 400 | Location fields required | Provide `postalCode`, `city`, and `province` |
+| `INVALID_PROFILE` | 400 | Profile ID/code required | Provide `dealerProfileId` or `dealerLocationCode` |
+
+### Resource Errors
+
+| Code | Status | Description | Solution |
+|------|--------|-------------|----------|
+| `NOT_FOUND` | 404 | Listing not found | Check the external reference |
+| `FETCH_FAILED` | 500 | Failed to fetch data | Retry, contact support if persistent |
+| `UPSERT_FAILED` | 500 | Failed to save listing | Retry, contact support if persistent |
+| `FEATURES_FAILED` | 500 | Failed to sync features | Check feature format |
+| `IMAGES_FAILED` | 500 | Failed to sync images | Check image URLs are accessible |
+
+### Rate Limiting
+
+| Code | Status | Description | Solution |
+|------|--------|-------------|----------|
+| `RATE_LIMITED` | 429 | Too many requests | Wait for `Retry-After` seconds |
+
+### Bulk Operations
+
+| Code | Status | Description | Solution |
+|------|--------|-------------|----------|
+| `EMPTY_PAYLOAD` | 400 | No items provided | Include at least one item |
+| `TOO_MANY_ITEMS` | 400 | Exceeded 100 items | Split into smaller batches |
+
+## Handling Errors in Code
+
+<CodeGroup>
+```javascript Node.js
+async function createListing(listing) {
+  const response = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${process.env.PARTNER_SECRET}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(listing)
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+
+    switch (response.status) {
+      case 401:
+        throw new Error('Invalid API credentials');
+      case 403:
+        throw new Error(`Access denied: ${error.error.message}`);
+      case 422:
+        const issues = error.error.issues.map(i =>
+          `${i.path}: ${i.message}`
+        ).join(', ');
+        throw new Error(`Validation failed: ${issues}`);
+      case 429:
+        const retryAfter = response.headers.get('Retry-After');
+        throw new Error(`Rate limited. Retry after ${retryAfter}s`);
+      default:
+        throw new Error(error.error.message || 'Unknown error');
+    }
+  }
+
+  return response.json();
+}
+```
+
+```python Python
+import requests
+from requests.exceptions import HTTPError
+
+def create_listing(listing):
+    response = requests.put(
+        url,
+        json=listing,
+        headers={'Authorization': f'Bearer {os.getenv("PARTNER_SECRET")}'}
+    )
+
+    try:
+        response.raise_for_status()
+        return response.json()
+    except HTTPError as e:
+        error = response.json().get('error', {})
+
+        if response.status_code == 401:
+            raise Exception('Invalid API credentials')
+        elif response.status_code == 403:
+            raise Exception(f"Access denied: {error.get('message')}")
+        elif response.status_code == 422:
+            issues = ', '.join(
+                f"{i['path']}: {i['message']}"
+                for i in error.get('issues', [])
+            )
+            raise Exception(f"Validation failed: {issues}")
+        elif response.status_code == 429:
+            retry_after = response.headers.get('Retry-After')
+            raise Exception(f"Rate limited. Retry after {retry_after}s")
+        else:
+            raise Exception(error.get('message', 'Unknown error'))
+```
+</CodeGroup>
+
+## Request ID for Support
+
+Every response includes a request ID in the header or response. Include this when contacting support:
+
+```http
+X-Request-Id: req-abc123-def456
+```
+
+<Tip>
+  Log the `X-Request-Id` for all failed requests to help with debugging.
+</Tip>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Rate Limiting" icon="gauge" href="/rate-limiting">
+    Handle rate limits gracefully
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/overview">
+    Explore all endpoints
+  </Card>
+</CardGroup>
