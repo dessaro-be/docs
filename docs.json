@@ -10,24 +10,7 @@
   "colors": {
     "primary": "#0D9373",
     "light": "#07C983",
-    "dark": "#0D9373",
-    "anchors": {
-      "from": "#0D9373",
-      "to": "#07C983"
-    }
-  },
-  "i18n": {
-    "languages": [
-      {
-        "code": "en",
-        "name": "English",
-        "default": true
-      },
-      {
-        "code": "nl",
-        "name": "Nederlands"
-      }
-    ]
+    "dark": "#0D9373"
   },
   "topbarLinks": [
     {
@@ -39,66 +22,60 @@
     "name": "Okasie.be",
     "url": "https://www.okasie.be"
   },
-  "tabs": [
-    {
-      "name": "API Reference",
-      "url": "api-reference"
-    }
-  ],
-  "anchors": [
-    {
-      "name": "API Status",
-      "icon": "signal",
-      "url": "https://www.okasie.be"
-    },
-    {
-      "name": "Contact",
-      "icon": "envelope",
-      "url": "mailto:info@okasie.be"
-    }
-  ],
-  "navigation": [
-    {
-      "group": "Getting Started",
-      "pages": [
-        "introduction",
-        "quickstart",
-        "authentication"
-      ]
-    },
-    {
-      "group": "Guides",
-      "pages": [
-        "rate-limiting",
-        "errors",
-        "guides/incremental-sync",
-        "guides/image-handling"
-      ]
-    },
-    {
-      "group": "API Reference",
-      "pages": [
-        "api-reference/overview"
-      ]
-    },
-    {
-      "group": "Listings",
-      "pages": [
-        "api-reference/listings/list",
-        "api-reference/listings/upsert",
-        "api-reference/listings/bulk-upsert",
-        "api-reference/listings/delete",
-        "api-reference/listings/status"
-      ]
-    },
-    {
-      "group": "Locations",
-      "pages": [
-        "api-reference/locations/list",
-        "api-reference/locations/listings"
-      ]
-    }
-  ],
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "authentication"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "rate-limiting",
+              "errors",
+              "guides/incremental-sync",
+              "guides/image-handling"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api-reference/overview"
+            ]
+          },
+          {
+            "group": "Listings",
+            "pages": [
+              "api-reference/listings/list",
+              "api-reference/listings/upsert",
+              "api-reference/listings/bulk-upsert",
+              "api-reference/listings/delete",
+              "api-reference/listings/status"
+            ]
+          },
+          {
+            "group": "Locations",
+            "pages": [
+              "api-reference/locations/list",
+              "api-reference/locations/listings"
+            ]
+          }
+        ]
+      }
+    ]
+  },
   "footerSocials": {
     "website": "https://www.okasie.be"
   },
