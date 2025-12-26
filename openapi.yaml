@@ -503,10 +503,19 @@ components:
           example: "2021-03"
         doors:
           type: integer
+        seats:
+          type: integer
         color:
           type: string
         powerKw:
           type: number
+          description: Engine power in kW
+        co2Emission:
+          type: integer
+          description: CO2 emissions in g/km
+        emissionClass:
+          type: string
+          description: Euro emission class (e.g., "EURO 6")
         vin:
           type: string
           maxLength: 17
@@ -619,6 +628,15 @@ components:
         powerKw:
           type: number
           minimum: 0
+          description: Engine power in kW (converted to HP internally)
+        co2Emission:
+          type: integer
+          minimum: 0
+          description: CO2 emissions in g/km
+        emissionClass:
+          type: string
+          maxLength: 30
+          description: Euro emission class (e.g., "EURO 6", "EURO 6d")
         vin:
           type: string
           maxLength: 32
