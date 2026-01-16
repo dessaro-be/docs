@@ -1,6 +1,6 @@
 ---
-title: Create/Update Listing
-api: PUT /api/external/v1/listings/{externalReference}
+title: "Create/Update Listing"
+api: "PUT /api/external/v1/listings/{externalReference}"
 description: "Create or update a vehicle listing"
 ---
 
@@ -15,8 +15,7 @@ Upsert a vehicle listing by external reference. Creates a new listing if it does
 <Warning>
   **PUT is a full replacement**
 
-  The PUT operation replaces the entire listing. Fields not included in your request will be set to `null`.
-  Always send ALL fields with every request, even when updating an existing listing.
+  The PUT operation replaces the entire listing. Fields not included in your request will be set to `null`. Always send ALL fields with every request, even when updating an existing listing.
 </Warning>
 
 ## Path Parameters
@@ -35,7 +34,7 @@ Upsert a vehicle listing by external reference. Creates a new listing if it does
   Location code. Required if `dealerProfileId` is not provided.
 </ParamField>
 
-<ParamField body="status" type="string" default="draft">
+<ParamField body="status" default="draft" type="string">
   Listing status: `active`, `pending`, `sold`, or `draft`
 </ParamField>
 
@@ -218,6 +217,7 @@ Upsert a vehicle listing by external reference. Creates a new listing if it does
 </ResponseField>
 
 <RequestExample>
+
 ```bash cURL
 curl -X PUT "https://www.okasie.be/api/external/v1/listings/MY-REF-001" \
   -H "Authorization: Bearer YOUR_API_SECRET" \
@@ -271,9 +271,11 @@ curl -X PUT "https://www.okasie.be/api/external/v1/listings/MY-REF-001" \
     ]
   }'
 ```
+
 </RequestExample>
 
 <ResponseExample>
+
 ```json Success (201 Created)
 {
   "data": {
@@ -285,6 +287,7 @@ curl -X PUT "https://www.okasie.be/api/external/v1/listings/MY-REF-001" \
 }
 ```
 
+
 ```json Updated (200 OK)
 {
   "data": {
@@ -295,6 +298,7 @@ curl -X PUT "https://www.okasie.be/api/external/v1/listings/MY-REF-001" \
   }
 }
 ```
+
 
 ```json With Warnings
 {
@@ -311,65 +315,72 @@ curl -X PUT "https://www.okasie.be/api/external/v1/listings/MY-REF-001" \
   }
 }
 ```
+
 </ResponseExample>
 
 ## Error Responses
 
-| Status | Code | Description |
-|--------|------|-------------|
-| 400 | `INVALID_TITLE` | Title is required |
-| 400 | `INVALID_PRICE` | Price required for active listings |
-| 400 | `INVALID_LOCATION` | postalCode, city, and province required |
-| 400 | `INVALID_PROFILE` | dealerProfileId or dealerLocationCode required |
-| 403 | `PROFILE_FORBIDDEN` | No access to requested profile |
-| 422 | `VALIDATION_FAILED` | Payload validation failed |
+| Status | Code                | Description                                    |
+| ------ | ------------------- | ---------------------------------------------- |
+| 400    | `INVALID_TITLE`     | Title is required                              |
+| 400    | `INVALID_PRICE`     | Price required for active listings             |
+| 400    | `INVALID_LOCATION`  | postalCode, city, and province required        |
+| 400    | `INVALID_PROFILE`   | dealerProfileId or dealerLocationCode required |
+| 403    | `PROFILE_FORBIDDEN` | No access to requested profile                 |
+| 422    | `VALIDATION_FAILED` | Payload validation failed                      |
 
 ## Enum Values Reference
 
 ### driveType
-| Value | Description |
-|-------|-------------|
-| `FWD` | Front-wheel drive (Voorwielaandrijving) |
+
+| Value | Description                              |
+| ----- | ---------------------------------------- |
+| `FWD` | Front-wheel drive (Voorwielaandrijving)  |
 | `RWD` | Rear-wheel drive (Achterwielaandrijving) |
-| `AWD` | All-wheel drive (Vierwielaandrijving) |
-| `4WD` | Four-wheel drive |
-| `4x4` | Four-wheel drive |
+| `AWD` | All-wheel drive (Vierwielaandrijving)    |
+| `4WD` | Four-wheel drive                         |
+| `4x4` | Four-wheel drive                         |
 
 ### interiorMaterial
-| Value | Description |
-|-------|-------------|
-| `Leder` | Leather |
-| `Stof` | Fabric |
-| `Alcantara` | Alcantara |
-| `Kunstleder` | Synthetic leather |
-| `Leder/Stof` | Leather/Fabric combination |
+
+| Value             | Description                   |
+| ----------------- | ----------------------------- |
+| `Leder`           | Leather                       |
+| `Stof`            | Fabric                        |
+| `Alcantara`       | Alcantara                     |
+| `Kunstleder`      | Synthetic leather             |
+| `Leder/Stof`      | Leather/Fabric combination    |
 | `Leder/Alcantara` | Leather/Alcantara combination |
 
 ### paintType
-| Value | Description |
-|-------|-------------|
-| `Metallic` | Metallic paint |
-| `Parelmoer` | Pearl paint |
-| `Mat` | Matte paint |
-| `Uni` | Solid/plain paint |
+
+| Value       | Description       |
+| ----------- | ----------------- |
+| `Metallic`  | Metallic paint    |
+| `Parelmoer` | Pearl paint       |
+| `Mat`       | Matte paint       |
+| `Uni`       | Solid/plain paint |
 
 ### co2Type
-| Value | Description |
-|-------|-------------|
+
+| Value  | Description                                       |
+| ------ | ------------------------------------------------- |
 | `WLTP` | Worldwide Harmonised Light Vehicle Test Procedure |
-| `NEDC` | New European Driving Cycle (legacy) |
+| `NEDC` | New European Driving Cycle (legacy)               |
 
 ### condition
-| Value | Description |
-|-------|-------------|
-| `new` | New vehicle |
-| `used` | Used vehicle |
-| `demo` | Demo/showroom vehicle |
+
+| Value      | Description             |
+| ---------- | ----------------------- |
+| `new`      | New vehicle             |
+| `used`     | Used vehicle            |
+| `demo`     | Demo/showroom vehicle   |
 | `oldtimer` | Classic/vintage vehicle |
-| `damaged` | Damaged vehicle |
+| `damaged`  | Damaged vehicle         |
 
 ### vehicleType
-| Value | Description |
-|-------|-------------|
+
+| Value    | Description                       |
+| -------- | --------------------------------- |
 | `margin` | Margin scheme (no VAT deductible) |
-| `btw` | VAT scheme (VAT deductible)
+| `btw`    | VAT scheme (VAT deductible)       |

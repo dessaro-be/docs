@@ -1,5 +1,5 @@
 ---
-title: Error Handling
+title: "Error Handling"
 description: "API error codes and how to handle them"
 ---
 
@@ -40,66 +40,67 @@ For validation errors, additional details are provided:
 
 ## HTTP Status Codes
 
-| Status | Meaning | Action |
-|--------|---------|--------|
-| `200` | Success | Process the response |
-| `201` | Created | Resource was created successfully |
-| `400` | Bad Request | Check your request format |
-| `401` | Unauthorized | Check your API secret |
-| `403` | Forbidden | You don't have access to this resource |
-| `404` | Not Found | Resource doesn't exist |
-| `422` | Validation Error | Check the `issues` array for details |
-| `429` | Rate Limited | Wait and retry with backoff |
-| `500` | Server Error | Retry later, contact support if persistent |
+| Status | Meaning          | Action                                     |
+| ------ | ---------------- | ------------------------------------------ |
+| `200`  | Success          | Process the response                       |
+| `201`  | Created          | Resource was created successfully          |
+| `400`  | Bad Request      | Check your request format                  |
+| `401`  | Unauthorized     | Check your API secret                      |
+| `403`  | Forbidden        | You don't have access to this resource     |
+| `404`  | Not Found        | Resource doesn't exist                     |
+| `422`  | Validation Error | Check the `issues` array for details       |
+| `429`  | Rate Limited     | Wait and retry with backoff                |
+| `500`  | Server Error     | Retry later, contact support if persistent |
 
 ## Error Codes Reference
 
 ### Authentication Errors
 
-| Code | Status | Description | Solution |
-|------|--------|-------------|----------|
-| `UNAUTHORIZED` | 401 | Invalid or missing API key | Check your `Authorization` header |
-| `PROFILE_FORBIDDEN` | 403 | No access to requested profile | Contact support for access |
+| Code                | Status | Description                    | Solution                          |
+| ------------------- | ------ | ------------------------------ | --------------------------------- |
+| `UNAUTHORIZED`      | 401    | Invalid or missing API key     | Check your `Authorization` header |
+| `PROFILE_FORBIDDEN` | 403    | No access to requested profile | Contact support for access        |
 
 ### Validation Errors
 
-| Code | Status | Description | Solution |
-|------|--------|-------------|----------|
-| `INVALID_JSON` | 400 | Request body is not valid JSON | Check JSON syntax |
-| `INVALID_BODY` | 400 | Request body must be an object | Ensure you're sending a JSON object |
-| `INVALID_REFERENCE` | 400 | External reference is missing | Provide `externalReference` |
-| `VALIDATION_FAILED` | 422 | Payload validation failed | Check `issues` for specific fields |
-| `INVALID_TITLE` | 400 | Title is required | Provide a non-empty `title` |
-| `INVALID_PRICE` | 400 | Price required for active listings | Provide `price` when `status` is `active` |
-| `INVALID_LOCATION` | 400 | Location fields required | Provide `postalCode`, `city`, and `province` |
-| `INVALID_PROFILE` | 400 | Profile ID/code required | Provide `dealerProfileId` or `dealerLocationCode` |
+| Code                | Status | Description                        | Solution                                          |
+| ------------------- | ------ | ---------------------------------- | ------------------------------------------------- |
+| `INVALID_JSON`      | 400    | Request body is not valid JSON     | Check JSON syntax                                 |
+| `INVALID_BODY`      | 400    | Request body must be an object     | Ensure you're sending a JSON object               |
+| `INVALID_REFERENCE` | 400    | External reference is missing      | Provide `externalReference`                       |
+| `VALIDATION_FAILED` | 422    | Payload validation failed          | Check `issues` for specific fields                |
+| `INVALID_TITLE`     | 400    | Title is required                  | Provide a non-empty `title`                       |
+| `INVALID_PRICE`     | 400    | Price required for active listings | Provide `price` when `status` is `active`         |
+| `INVALID_LOCATION`  | 400    | Location fields required           | Provide `postalCode`, `city`, and `province`      |
+| `INVALID_PROFILE`   | 400    | Profile ID/code required           | Provide `dealerProfileId` or `dealerLocationCode` |
 
 ### Resource Errors
 
-| Code | Status | Description | Solution |
-|------|--------|-------------|----------|
-| `NOT_FOUND` | 404 | Listing not found | Check the external reference |
-| `FETCH_FAILED` | 500 | Failed to fetch data | Retry, contact support if persistent |
-| `UPSERT_FAILED` | 500 | Failed to save listing | Retry, contact support if persistent |
-| `FEATURES_FAILED` | 500 | Failed to sync features | Check feature format |
-| `IMAGES_FAILED` | 500 | Failed to sync images | Check image URLs are accessible |
+| Code              | Status | Description             | Solution                             |
+| ----------------- | ------ | ----------------------- | ------------------------------------ |
+| `NOT_FOUND`       | 404    | Listing not found       | Check the external reference         |
+| `FETCH_FAILED`    | 500    | Failed to fetch data    | Retry, contact support if persistent |
+| `UPSERT_FAILED`   | 500    | Failed to save listing  | Retry, contact support if persistent |
+| `FEATURES_FAILED` | 500    | Failed to sync features | Check feature format                 |
+| `IMAGES_FAILED`   | 500    | Failed to sync images   | Check image URLs are accessible      |
 
 ### Rate Limiting
 
-| Code | Status | Description | Solution |
-|------|--------|-------------|----------|
-| `RATE_LIMITED` | 429 | Too many requests | Wait for `Retry-After` seconds |
+| Code           | Status | Description       | Solution                       |
+| -------------- | ------ | ----------------- | ------------------------------ |
+| `RATE_LIMITED` | 429    | Too many requests | Wait for `Retry-After` seconds |
 
 ### Bulk Operations
 
-| Code | Status | Description | Solution |
-|------|--------|-------------|----------|
-| `EMPTY_PAYLOAD` | 400 | No items provided | Include at least one item |
-| `TOO_MANY_ITEMS` | 400 | Exceeded 100 items | Split into smaller batches |
+| Code             | Status | Description        | Solution                   |
+| ---------------- | ------ | ------------------ | -------------------------- |
+| `EMPTY_PAYLOAD`  | 400    | No items provided  | Include at least one item  |
+| `TOO_MANY_ITEMS` | 400    | Exceeded 100 items | Split into smaller batches |
 
 ## Handling Errors in Code
 
 <CodeGroup>
+
 ```javascript Node.js
 async function createListing(listing) {
   const response = await fetch(url, {
@@ -136,6 +137,7 @@ async function createListing(listing) {
 }
 ```
 
+
 ```python Python
 import requests
 from requests.exceptions import HTTPError
@@ -169,6 +171,7 @@ def create_listing(listing):
         else:
             raise Exception(error.get('message', 'Unknown error'))
 ```
+
 </CodeGroup>
 
 ## Request ID for Support
