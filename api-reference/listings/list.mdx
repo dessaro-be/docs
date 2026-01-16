@@ -1,6 +1,6 @@
 ---
-title: List Listings
-api: GET /api/external/v1/listings
+title: "List Listings"
+api: "GET /api/external/v1/listings"
 description: "Retrieve paginated vehicle listings"
 ---
 
@@ -8,15 +8,15 @@ description: "Retrieve paginated vehicle listings"
 
 Retrieve a paginated list of vehicle listings within your partner access scope.
 
-<ParamField query="page" type="integer" default="1">
+<ParamField query="page" default="1" type="integer">
   Page number (1-based)
 </ParamField>
 
-<ParamField query="pageSize" type="integer" default="50">
+<ParamField query="pageSize" default="50" type="integer">
   Number of items per page (max 200)
 </ParamField>
 
-<ParamField query="status" type="string" default="active">
+<ParamField query="status" default="active" type="string">
   Filter by listing status: `active`, `pending`, `sold`, `draft`, or `all`
 </ParamField>
 
@@ -117,13 +117,16 @@ Retrieve a paginated list of vehicle listings within your partner access scope.
 </ResponseField>
 
 <RequestExample>
+
 ```bash cURL
 curl -X GET "https://www.okasie.be/api/external/v1/listings?pageSize=50&status=active" \
   -H "Authorization: Bearer YOUR_API_SECRET"
 ```
+
 </RequestExample>
 
 <ResponseExample>
+
 ```json Response
 {
   "data": [
@@ -175,4 +178,5 @@ curl -X GET "https://www.okasie.be/api/external/v1/listings?pageSize=50&status=a
   }
 }
 ```
+
 </ResponseExample>
