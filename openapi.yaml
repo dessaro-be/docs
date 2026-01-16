@@ -137,6 +137,11 @@ paths:
       description: |
         Upsert a vehicle listing by external reference. Creates a new listing if it doesn't exist,
         or updates the existing one. Images are automatically mirrored to Okasie storage.
+
+        **Important: PUT is a full replacement**
+
+        The PUT operation replaces the entire listing. Fields not included in your request will be set to `null`.
+        Always send ALL fields with every request, even when updating.
       tags:
         - Listings
       parameters:
@@ -162,11 +167,31 @@ paths:
               price: 19995
               brand: "Opel"
               model: "Corsa"
+              variant: "GS Line"
               year: 2021
               mileage: 25000
               fuelType: "petrol"
               transmission: "automatic"
+              driveType: "FWD"
+              gears: 6
               bodyType: "hatchback"
+              engine: "1.2 Turbo 100pk"
+              color: "Blauw"
+              interiorColor: "Zwart"
+              interiorMaterial: "Stof"
+              weight: 1180
+              previousOwners: 1
+              serviceHistory: true
+              warranty: true
+              warrantyMonths: 12
+              co2Emission: 118
+              co2Type: "WLTP"
+              emissionClass: "Euro 6d"
+              paintType: "Metallic"
+              fuelConsumption: 5.1
+              condition: "used"
+              vehicleType: "margin"
+              firstRegistration: "2021-03"
               postalCode: "9000"
               city: "Gent"
               province: "Oost-Vlaanderen"
@@ -503,22 +528,73 @@ components:
           example: "2021-03"
         doors:
           type: integer
-        seats:
-          type: integer
         color:
           type: string
         powerKw:
           type: number
-          description: Engine power in kW
-        co2Emission:
-          type: integer
-          description: CO2 emissions in g/km
-        emissionClass:
-          type: string
-          description: Euro emission class (e.g., "EURO 6")
         vin:
           type: string
           maxLength: 17
+        # Additional vehicle details
+        engine:
+          type: string
+          description: Engine description
+        driveType:
+          type: string
+          description: Drive type (FWD, RWD, AWD, 4WD)
+        gears:
+          type: integer
+          description: Number of gears
+        interiorColor:
+          type: string
+          description: Interior color
+        interiorMaterial:
+          type: string
+          description: Interior material
+        weight:
+          type: integer
+          description: Vehicle weight in kg
+        previousOwners:
+          type: integer
+          description: Number of previous owners
+        serviceHistory:
+          type: boolean
+          description: Service history available
+        warranty:
+          type: boolean
+          description: Warranty included
+        warrantyMonths:
+          type: integer
+          description: Warranty duration in months
+        co2Emission:
+          type: integer
+          description: CO2 emissions in g/km
+        co2Type:
+          type: string
+          description: CO2 measurement standard (WLTP or NEDC)
+        emissionClass:
+          type: string
+          description: Euro emission class
+        paintType:
+          type: string
+          description: Paint type
+        fuelConsumption:
+          type: number
+          description: Fuel consumption in L/100km
+        variant:
+          type: string
+          description: Model variant/trim level
+        condition:
+          type: string
+          description: Vehicle condition
+        conditionTags:
+          type: array
+          items:
+            type: string
+          description: Vehicle condition tags
+        vehicleType:
+          type: string
+          description: VAT regime (margin or btw)
         location:
           type: object
           properties:
@@ -628,15 +704,6 @@ components:
         powerKw:
           type: number
           minimum: 0
-          description: Engine power in kW (converted to HP internally)
-        co2Emission:
-          type: integer
-          minimum: 0
-          description: CO2 emissions in g/km
-        emissionClass:
-          type: string
-          maxLength: 30
-          description: Euro emission class (e.g., "EURO 6", "EURO 6d")
         vin:
           type: string
           maxLength: 32
@@ -660,6 +727,82 @@ components:
           type: number
         longitude:
           type: number
+        # Additional vehicle details
+        engine:
+          type: string
+          maxLength: 60
+          description: Engine description (e.g., "1.6 TDI 115pk")
+        driveType:
+          type: string
+          maxLength: 60
+          description: Drive type (FWD, RWD, AWD, 4WD, 4x4)
+          example: "FWD"
+        gears:
+          type: integer
+          minimum: 1
+          maximum: 12
+          description: Number of gears
+        interiorColor:
+          type: string
+          maxLength: 60
+          description: Interior color
+        interiorMaterial:
+          type: string
+          maxLength: 60
+          description: Interior material (Leder, Stof, Alcantara, Kunstleder, etc.)
+        weight:
+          type: integer
+          minimum: 0
+          description: Vehicle weight in kg
+        previousOwners:
+          type: integer
+          minimum: 0
+          description: Number of previous owners
+        serviceHistory:
+          type: boolean
+          description: Service history available
+        warranty:
+          type: boolean
+          description: Warranty included
+        warrantyMonths:
+          type: integer
+          minimum: 0
+          description: Warranty duration in months
+        co2Emission:
+          type: integer
+          minimum: 0
+          description: CO2 emissions in g/km
+        co2Type:
+          type: string
+          maxLength: 30
+          description: CO2 measurement standard (WLTP or NEDC)
+          enum: [WLTP, NEDC]
+        emissionClass:
+          type: string
+          maxLength: 30
+          description: Euro emission class (e.g., "Euro 6d")
+        paintType:
+          type: string
+          maxLength: 60
+          description: Paint type (Metallic, Parelmoer, Mat, Uni)
+        fuelConsumption:
+          type: number
+          minimum: 0
+          description: Fuel consumption in L/100km
+        variant:
+          type: string
+          maxLength: 120
+          description: Model variant/trim level (e.g., "GT Line", "Signature")
+        condition:
+          type: string
+          maxLength: 60
+          description: Vehicle condition
+          enum: [new, used, demo, oldtimer, damaged]
+        vehicleType:
+          type: string
+          maxLength: 60
+          description: VAT regime (margin or btw)
+          enum: [margin, btw]
         features:
           type: array
           items:

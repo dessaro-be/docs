@@ -12,6 +12,13 @@ Upsert a vehicle listing by external reference. Creates a new listing if it does
   Requires the `write:listings` scope. Contact support to enable write access.
 </Note>
 
+<Warning>
+  **PUT is a full replacement**
+
+  The PUT operation replaces the entire listing. Fields not included in your request will be set to `null`.
+  Always send ALL fields with every request, even when updating an existing listing.
+</Warning>
+
 ## Path Parameters
 
 <ParamField path="externalReference" type="string" required>
@@ -72,6 +79,102 @@ Upsert a vehicle listing by external reference. Creates a new listing if it does
   Body type: `hatchback`, `sedan`, `suv`, `wagon`, `convertible`, `van`, `coupe`, `other`
 </ParamField>
 
+<ParamField body="variant" type="string">
+  Model variant/trim level (e.g., "GT Line", "Signature")
+</ParamField>
+
+<ParamField body="engine" type="string">
+  Engine description (e.g., "1.6 TDI 115pk", "2.0 TSI")
+</ParamField>
+
+<ParamField body="driveType" type="string">
+  Drive type: `FWD`, `RWD`, `AWD`, `4WD`, `4x4`
+</ParamField>
+
+<ParamField body="gears" type="integer">
+  Number of gears (1-12)
+</ParamField>
+
+<ParamField body="color" type="string">
+  Exterior color
+</ParamField>
+
+<ParamField body="interiorColor" type="string">
+  Interior color
+</ParamField>
+
+<ParamField body="interiorMaterial" type="string">
+  Interior material: `Leder`, `Stof`, `Alcantara`, `Kunstleder`, `Leder/Stof`, `Leder/Alcantara`
+</ParamField>
+
+<ParamField body="weight" type="integer">
+  Vehicle weight in kg
+</ParamField>
+
+<ParamField body="previousOwners" type="integer">
+  Number of previous owners
+</ParamField>
+
+<ParamField body="serviceHistory" type="boolean">
+  Service history available
+</ParamField>
+
+<ParamField body="warranty" type="boolean">
+  Warranty included
+</ParamField>
+
+<ParamField body="warrantyMonths" type="integer">
+  Warranty duration in months
+</ParamField>
+
+<ParamField body="co2Emission" type="integer">
+  CO2 emissions in g/km
+</ParamField>
+
+<ParamField body="co2Type" type="string">
+  CO2 measurement standard: `WLTP` or `NEDC`
+</ParamField>
+
+<ParamField body="emissionClass" type="string">
+  Euro emission class (e.g., "Euro 6d")
+</ParamField>
+
+<ParamField body="paintType" type="string">
+  Paint type: `Metallic`, `Parelmoer`, `Mat`, `Uni`
+</ParamField>
+
+<ParamField body="fuelConsumption" type="number">
+  Fuel consumption in L/100km
+</ParamField>
+
+<ParamField body="condition" type="string">
+  Vehicle condition: `new`, `used`, `demo`, `oldtimer`, `damaged`
+</ParamField>
+
+<ParamField body="vehicleType" type="string">
+  VAT regime: `margin` or `btw`
+</ParamField>
+
+<ParamField body="firstRegistration" type="string">
+  First registration date (format: YYYY-MM)
+</ParamField>
+
+<ParamField body="doors" type="integer">
+  Number of doors (1-10)
+</ParamField>
+
+<ParamField body="seats" type="integer">
+  Number of seats (1-10)
+</ParamField>
+
+<ParamField body="powerKw" type="number">
+  Engine power in kW
+</ParamField>
+
+<ParamField body="vin" type="string">
+  Vehicle identification number
+</ParamField>
+
 <ParamField body="postalCode" type="string">
   Belgian postal code. Required for active listings.
 </ParamField>
@@ -122,16 +225,39 @@ curl -X PUT "https://www.okasie.be/api/external/v1/listings/MY-REF-001" \
   -d '{
     "dealerProfileId": "84118503-030b-45f3-a867-c77d54d00b4c",
     "status": "active",
-    "title": "Opel Corsa 1.2 Turbo",
+    "title": "Opel Corsa 1.2 Turbo GS Line",
     "description": "Compact city car in excellent condition",
     "price": 19995,
     "brand": "Opel",
     "model": "Corsa",
+    "variant": "GS Line",
     "year": 2021,
     "mileage": 25000,
     "fuelType": "petrol",
     "transmission": "automatic",
+    "driveType": "FWD",
+    "gears": 6,
     "bodyType": "hatchback",
+    "engine": "1.2 Turbo 100pk",
+    "color": "Blauw",
+    "interiorColor": "Zwart",
+    "interiorMaterial": "Stof",
+    "doors": 5,
+    "seats": 5,
+    "powerKw": 74,
+    "weight": 1180,
+    "previousOwners": 1,
+    "serviceHistory": true,
+    "warranty": true,
+    "warrantyMonths": 12,
+    "co2Emission": 118,
+    "co2Type": "WLTP",
+    "emissionClass": "Euro 6d",
+    "paintType": "Metallic",
+    "fuelConsumption": 5.1,
+    "condition": "used",
+    "vehicleType": "margin",
+    "firstRegistration": "2021-03",
     "postalCode": "9000",
     "city": "Gent",
     "province": "Oost-Vlaanderen",
@@ -197,3 +323,53 @@ curl -X PUT "https://www.okasie.be/api/external/v1/listings/MY-REF-001" \
 | 400 | `INVALID_PROFILE` | dealerProfileId or dealerLocationCode required |
 | 403 | `PROFILE_FORBIDDEN` | No access to requested profile |
 | 422 | `VALIDATION_FAILED` | Payload validation failed |
+
+## Enum Values Reference
+
+### driveType
+| Value | Description |
+|-------|-------------|
+| `FWD` | Front-wheel drive (Voorwielaandrijving) |
+| `RWD` | Rear-wheel drive (Achterwielaandrijving) |
+| `AWD` | All-wheel drive (Vierwielaandrijving) |
+| `4WD` | Four-wheel drive |
+| `4x4` | Four-wheel drive |
+
+### interiorMaterial
+| Value | Description |
+|-------|-------------|
+| `Leder` | Leather |
+| `Stof` | Fabric |
+| `Alcantara` | Alcantara |
+| `Kunstleder` | Synthetic leather |
+| `Leder/Stof` | Leather/Fabric combination |
+| `Leder/Alcantara` | Leather/Alcantara combination |
+
+### paintType
+| Value | Description |
+|-------|-------------|
+| `Metallic` | Metallic paint |
+| `Parelmoer` | Pearl paint |
+| `Mat` | Matte paint |
+| `Uni` | Solid/plain paint |
+
+### co2Type
+| Value | Description |
+|-------|-------------|
+| `WLTP` | Worldwide Harmonised Light Vehicle Test Procedure |
+| `NEDC` | New European Driving Cycle (legacy) |
+
+### condition
+| Value | Description |
+|-------|-------------|
+| `new` | New vehicle |
+| `used` | Used vehicle |
+| `demo` | Demo/showroom vehicle |
+| `oldtimer` | Classic/vintage vehicle |
+| `damaged` | Damaged vehicle |
+
+### vehicleType
+| Value | Description |
+|-------|-------------|
+| `margin` | Margin scheme (no VAT deductible) |
+| `btw` | VAT scheme (VAT deductible)
