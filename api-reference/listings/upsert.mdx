@@ -30,6 +30,10 @@ Upsert a vehicle listing by external reference. Creates a new listing if it does
   Use these JSON field names in API payloads. Dashboard HTML field names are not the API contract unless they are listed here as aliases.
 </Note>
 
+### Car-Pass / carpass
+
+Use `carPassUrl` for Car-Pass. The search term `carpass` is intentionally listed here as an alias for partners who search without the hyphen. Accepted input aliases are `carPass`, `car_pass_url`, and `carPassNumber`, but new integrations should send `carPassUrl`.
+
 ### JSON Field Names
 
 | Field | Required | Description |
