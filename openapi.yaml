@@ -192,6 +192,7 @@ paths:
               condition: "used"
               vehicleType: "margin"
               firstRegistration: "2021-03"
+              carPassUrl: "https://public.car-pass.be/vhr/example"
               postalCode: "9000"
               city: "Gent"
               province: "Oost-Vlaanderen"
@@ -335,6 +336,7 @@ paths:
                   status: "active"
                   title: "Jeep Compass"
                   price: 18500
+                  carPassUrl: "https://public.car-pass.be/vhr/example"
                   postalCode: "9000"
                   city: "Gent"
                   province: "Oost-Vlaanderen"
@@ -343,6 +345,7 @@ paths:
                   status: "pending"
                   title: "Renault Trafic"
                   price: 26990
+                  carPassUrl: "12345678901"
                   postalCode: "9000"
                   city: "Gent"
                   province: "Oost-Vlaanderen"
@@ -535,6 +538,11 @@ components:
         vin:
           type: string
           maxLength: 17
+        carPassUrl:
+          type: string
+          nullable: true
+          description: Public Car-Pass URL from public.car-pass.be or car-pass.be, or a legacy 11-digit certificate number
+          example: "https://public.car-pass.be/vhr/example"
         # Additional vehicle details
         engine:
           type: string
@@ -707,6 +715,30 @@ components:
         vin:
           type: string
           maxLength: 32
+        carPassUrl:
+          type: string
+          maxLength: 2048
+          nullable: true
+          description: Canonical Car-Pass field. Accepts a public.car-pass.be or car-pass.be URL, or a legacy 11-digit certificate number. Input aliases carPass, car_pass_url, and carPassNumber are also accepted.
+          example: "https://public.car-pass.be/vhr/example"
+        carPass:
+          type: string
+          maxLength: 2048
+          nullable: true
+          deprecated: true
+          description: Alias for carPassUrl. Prefer carPassUrl for new integrations.
+        car_pass_url:
+          type: string
+          maxLength: 2048
+          nullable: true
+          deprecated: true
+          description: Alias for carPassUrl. Prefer carPassUrl for new integrations.
+        carPassNumber:
+          type: string
+          maxLength: 2048
+          nullable: true
+          deprecated: true
+          description: Alias for carPassUrl. Prefer carPassUrl for new integrations.
         postalCode:
           type: string
           maxLength: 32
@@ -723,6 +755,17 @@ components:
           type: string
           maxLength: 10
           example: "2021-03"
+        customType:
+          type: string
+          maxLength: 60
+          description: Custom vehicle type label. If omitted, variant is also used as the custom type label.
+        conditionTags:
+          type: array
+          maxItems: 6
+          items:
+            type: string
+            maxLength: 32
+          description: Vehicle condition tags
         latitude:
           type: number
         longitude:
@@ -803,6 +846,23 @@ components:
           maxLength: 60
           description: VAT regime (margin or btw)
           enum: [margin, btw]
+        location:
+          type: object
+          description: Optional nested location object. Top-level postalCode, city, province, latitude, and longitude are also accepted.
+          properties:
+            postalCode:
+              type: string
+              maxLength: 32
+            city:
+              type: string
+              maxLength: 120
+            province:
+              type: string
+              maxLength: 120
+            latitude:
+              type: number
+            longitude:
+              type: number
         features:
           type: array
           items:
@@ -813,6 +873,9 @@ components:
                 enum: [interior, exterior, safety, comfort, technology, other]
               name:
                 type: string
+              feature:
+                type: string
+                description: Alias for name
         images:
           type: array
           description: Array of image URLs or objects with url and position

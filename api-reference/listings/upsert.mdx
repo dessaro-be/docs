@@ -26,6 +26,80 @@ Upsert a vehicle listing by external reference. Creates a new listing if it does
 
 ## Request Body
 
+<Note>
+  Use these JSON field names in API payloads. Dashboard HTML field names are not the API contract unless they are listed here as aliases.
+</Note>
+
+### Car-Pass / carpass
+
+Use `carPassUrl` for Car-Pass. The search term `carpass` is intentionally listed here as an alias for partners who search without the hyphen. Accepted input aliases are `carPass`, `car_pass_url`, and `carPassNumber`, but new integrations should send `carPassUrl`.
+
+### JSON Field Names
+
+| Field | Required | Description |
+| --- | --- | --- |
+| `externalReference` | Yes for bulk upsert | Your unique listing reference. For single upsert this is the path parameter |
+| `dealerProfileId` | Yes, unless `dealerLocationCode` is used | Dealer profile UUID |
+| `dealerLocationCode` | Yes, unless `dealerProfileId` is used | Dealer location code from the Okasie dashboard |
+| `status` | No | `active`, `pending`, `sold`, or `draft` |
+| `title` | Yes | Listing title |
+| `description` | No | Listing description |
+| `price` | Yes for `active`/`pending` | Price in EUR |
+| `currency` | No | ISO 4217 currency code, defaults to `EUR` |
+| `brand` | No | Vehicle brand |
+| `model` | No | Vehicle model |
+| `variant` | No | Model variant or trim |
+| `customType` | No | Custom vehicle type label. Falls back to `variant` when omitted |
+| `year` | No | Build year |
+| `mileage` | No | Mileage in kilometers |
+| `fuelType` | No | Fuel type |
+| `transmission` | No | Transmission type |
+| `bodyType` | No | Body type |
+| `engine` | No | Engine description |
+| `driveType` | No | Drive type |
+| `gears` | No | Number of gears |
+| `color` | No | Exterior color |
+| `interiorColor` | No | Interior color |
+| `interiorMaterial` | No | Interior material |
+| `doors` | No | Number of doors |
+| `seats` | No | Number of seats |
+| `powerKw` | No | Engine power in kW |
+| `weight` | No | Vehicle weight in kg |
+| `previousOwners` | No | Number of previous owners |
+| `serviceHistory` | No | Whether service history is available |
+| `warranty` | No | Whether warranty is included |
+| `warrantyMonths` | No | Warranty duration in months |
+| `co2Emission` | No | CO2 emissions in g/km |
+| `co2Type` | No | `WLTP` or `NEDC` |
+| `emissionClass` | No | Euro emission class |
+| `paintType` | No | Paint type |
+| `fuelConsumption` | No | Fuel consumption in L/100km |
+| `condition` | No | Vehicle condition |
+| `conditionTags` | No | Array of condition tags, max 6 |
+| `vehicleType` | No | VAT regime: `margin` or `btw` |
+| `firstRegistration` | No | First registration date, format `YYYY-MM` |
+| `vin` | No | Vehicle identification number |
+| `carPassUrl` | No | Preferred Car-Pass field. Accepts a `public.car-pass.be` or `car-pass.be` URL, or a legacy 11-digit certificate number |
+| `carPass` | Alias | Accepted alias for `carPassUrl`; prefer `carPassUrl` |
+| `car_pass_url` | Alias | Accepted alias for `carPassUrl`; prefer `carPassUrl` |
+| `carPassNumber` | Alias | Accepted alias for `carPassUrl`; prefer `carPassUrl` |
+| `postalCode` | Yes for active listings | Belgian postal code |
+| `city` | Yes for active listings | City |
+| `province` | Yes for active listings | Province |
+| `latitude` | No | Latitude |
+| `longitude` | No | Longitude |
+| `location.postalCode` | No | Nested location postal code alternative |
+| `location.city` | No | Nested location city alternative |
+| `location.province` | No | Nested location province alternative |
+| `location.latitude` | No | Nested location latitude alternative |
+| `location.longitude` | No | Nested location longitude alternative |
+| `features[].category` | No | Feature category |
+| `features[].name` | No | Feature name |
+| `features[].feature` | No | Accepted alias for feature name |
+| `images[]` | No | Image URL string |
+| `images[].url` | No | Image URL |
+| `images[].position` | No | Image order |
+
 <ParamField body="dealerProfileId" type="string">
   Dealer profile UUID. Required if `dealerLocationCode` is not provided.
 </ParamField>
@@ -48,6 +122,10 @@ Upsert a vehicle listing by external reference. Creates a new listing if it does
 
 <ParamField body="price" type="number">
   Price in EUR. Required when status is `active` or `pending`.
+</ParamField>
+
+<ParamField body="currency" type="string">
+  ISO 4217 currency code. Defaults to `EUR`.
 </ParamField>
 
 <ParamField body="brand" type="string">
@@ -80,6 +158,10 @@ Upsert a vehicle listing by external reference. Creates a new listing if it does
 
 <ParamField body="variant" type="string">
   Model variant/trim level (e.g., "GT Line", "Signature")
+</ParamField>
+
+<ParamField body="customType" type="string">
+  Custom vehicle type label. If omitted, `variant` is also used as the custom type label.
 </ParamField>
 
 <ParamField body="engine" type="string">
@@ -150,6 +232,10 @@ Upsert a vehicle listing by external reference. Creates a new listing if it does
   Vehicle condition: `new`, `used`, `demo`, `oldtimer`, `damaged`
 </ParamField>
 
+<ParamField body="conditionTags" type="array">
+  Array of condition tag strings (max 6)
+</ParamField>
+
 <ParamField body="vehicleType" type="string">
   VAT regime: `margin` or `btw`
 </ParamField>
@@ -174,6 +260,10 @@ Upsert a vehicle listing by external reference. Creates a new listing if it does
   Vehicle identification number
 </ParamField>
 
+<ParamField body="carPassUrl" type="string">
+  Public Car-Pass URL from `public.car-pass.be` or `car-pass.be`, or a legacy 11-digit certificate number. Input aliases `carPass`, `car_pass_url`, and `carPassNumber` are also accepted.
+</ParamField>
+
 <ParamField body="postalCode" type="string">
   Belgian postal code. Required for active listings.
 </ParamField>
@@ -186,8 +276,20 @@ Upsert a vehicle listing by external reference. Creates a new listing if it does
   Province name. Required for active listings.
 </ParamField>
 
+<ParamField body="latitude" type="number">
+  Location latitude. Can also be sent as `location.latitude`.
+</ParamField>
+
+<ParamField body="longitude" type="number">
+  Location longitude. Can also be sent as `location.longitude`.
+</ParamField>
+
+<ParamField body="location" type="object">
+  Optional nested location object with `postalCode`, `city`, `province`, `latitude`, and `longitude`.
+</ParamField>
+
 <ParamField body="features" type="array">
-  Array of feature objects with `category` and `name`
+  Array of feature objects with `category` and `name`. `feature` is accepted as an alias for `name`.
 </ParamField>
 
 <ParamField body="images" type="array">
@@ -258,6 +360,7 @@ curl -X PUT "https://www.okasie.be/api/external/v1/listings/MY-REF-001" \
     "condition": "used",
     "vehicleType": "margin",
     "firstRegistration": "2021-03",
+    "carPassUrl": "https://public.car-pass.be/vhr/example",
     "postalCode": "9000",
     "city": "Gent",
     "province": "Oost-Vlaanderen",

@@ -21,6 +21,10 @@ The request body can be either:
 
 Each item must include `externalReference` plus all required listing fields.
 
+<Note>
+  All JSON field names, including Car-Pass/carpass aliases like `carPassNumber`, are listed in the [single upsert field reference](/api-reference/listings/upsert#json-field-names).
+</Note>
+
 <ParamField body="items" type="array" required>
   Array of listing objects (max 100 items)
 
@@ -42,6 +46,9 @@ Each item must include `externalReference` plus all required listing fields.
     </ParamField>
     <ParamField body="price" type="number">
       Price (required for active/pending)
+    </ParamField>
+    <ParamField body="carPassUrl" type="string">
+      Public Car-Pass URL from `public.car-pass.be` or `car-pass.be`, or a legacy 11-digit certificate number. Input aliases `carPass`, `car_pass_url`, and `carPassNumber` are also accepted.
     </ParamField>
     <ParamField body="..." type="...">
       All other fields from the single upsert endpoint
@@ -121,6 +128,7 @@ curl -X POST "https://www.okasie.be/api/external/v1/listings/bulk-upsert" \
         "year": 2019,
         "mileage": 43700,
         "fuelType": "petrol",
+        "carPassUrl": "https://public.car-pass.be/vhr/example",
         "postalCode": "9000",
         "city": "Gent",
         "province": "Oost-Vlaanderen"
@@ -136,6 +144,7 @@ curl -X POST "https://www.okasie.be/api/external/v1/listings/bulk-upsert" \
         "year": 2020,
         "mileage": 65000,
         "fuelType": "diesel",
+        "carPassUrl": "12345678901",
         "postalCode": "9000",
         "city": "Gent",
         "province": "Oost-Vlaanderen",
