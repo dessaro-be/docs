@@ -21,6 +21,10 @@ The request body can be either:
 
 Each item must include `externalReference` plus all required listing fields.
 
+<Note>
+  All JSON field names, including Car-Pass aliases like `carPassNumber`, are listed in the [single upsert field reference](/api-reference/listings/upsert#json-field-names).
+</Note>
+
 <ParamField body="items" type="array" required>
   Array of listing objects (max 100 items)
 
