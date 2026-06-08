@@ -11,11 +11,11 @@ Retrieve dealer locations within your partner access scope. Supports hierarchica
 ## Query Parameters
 
 <ParamField query="parentId" type="string">
-  Filter to locations under this parent profile UUID
+  Filter to locations under this parent profile UUID. Alias: `parent_id`
 </ParamField>
 
 <ParamField query="includeChildren" type="boolean" default="true">
-  Include child locations in results
+  Include child locations in the result set
 </ParamField>
 
 <ParamField query="withCounts" type="boolean" default="true">
@@ -27,6 +27,41 @@ Retrieve dealer locations within your partner access scope. Supports hierarchica
 </ParamField>
 
 ## Response
+
+### Location Response Field Names
+
+| Field | Description |
+| --- | --- |
+| `id` | Location profile UUID |
+| `parentId` | Parent location UUID |
+| `isRoot` | Whether this location is in the partner root scope |
+| `locationCode` | Unique location code |
+| `companyName` | Company name |
+| `fullName` | Full profile name |
+| `displayName` | Display name |
+| `email` | Contact email |
+| `phone` | Contact phone |
+| `address` | Street address |
+| `postalCode` | Postal code |
+| `city` | City |
+| `province` | Province |
+| `logoUrl` | Logo URL |
+| `metadata` | Location metadata |
+| `parent.id` | Parent profile UUID |
+| `parent.locationCode` | Parent location code |
+| `parent.companyName` | Parent company name |
+| `parent.fullName` | Parent full name |
+| `parent.displayName` | Parent display name |
+| `stats.activeListings` | Active listing count |
+| `stats.totalListings` | Total listing count |
+| `stats.avgActivePrevMonth` | Average active listings previous month, when available |
+| `updatedAt` | ISO 8601 last update timestamp |
+| `meta.total` | Number of returned locations |
+| `meta.profileIds` | Effective profile IDs in response scope |
+| `meta.rootProfileIds` | Partner root profile IDs, when available |
+| `meta.filters.parentId` | Applied parent filter |
+| `meta.filters.search` | Applied search filter |
+| `meta.partner` | Partner metadata |
 
 <ResponseField name="data" type="array">
   Array of location objects
@@ -43,6 +78,9 @@ Retrieve dealer locations within your partner access scope. Supports hierarchica
     </ResponseField>
     <ResponseField name="companyName" type="string">
       Legal company name
+    </ResponseField>
+    <ResponseField name="fullName" type="string">
+      Full profile name
     </ResponseField>
     <ResponseField name="displayName" type="string">
       Display name
@@ -65,14 +103,23 @@ Retrieve dealer locations within your partner access scope. Supports hierarchica
     <ResponseField name="province" type="string">
       Province
     </ResponseField>
+    <ResponseField name="logoUrl" type="string">
+      Logo URL
+    </ResponseField>
+    <ResponseField name="metadata" type="object">
+      Location metadata
+    </ResponseField>
+    <ResponseField name="parent" type="object">
+      Parent profile summary
+    </ResponseField>
     <ResponseField name="isRoot" type="boolean">
       True if this is a root/parent location
     </ResponseField>
     <ResponseField name="stats" type="object">
       Listing statistics (when withCounts=true)
     </ResponseField>
-    <ResponseField name="children" type="array">
-      Child locations (when includeChildren=true)
+    <ResponseField name="updatedAt" type="string">
+      ISO 8601 last update timestamp
     </ResponseField>
   </Expandable>
 </ResponseField>
@@ -113,6 +160,7 @@ data.data.forEach(location => {
       "parentId": null,
       "locationCode": "DEX-HQ",
       "companyName": "DEX Belgium NV",
+      "fullName": "DEX Belgium",
       "displayName": "DEX Belgium",
       "email": "info@dex.be",
       "phone": "+32 3 123 45 67",
@@ -120,29 +168,26 @@ data.data.forEach(location => {
       "postalCode": "2000",
       "city": "Antwerpen",
       "province": "Antwerpen",
+      "logoUrl": "https://cdn.okasie.be/logos/dex.png",
+      "metadata": {},
+      "parent": null,
       "isRoot": true,
       "stats": {
         "activeListings": 250,
-        "totalListings": 312
+        "totalListings": 312,
+        "avgActivePrevMonth": 238.5
       },
-      "children": [
-        {
-          "id": "7f7f7f7f-7f7f-407f-a7f7-7f7f7f7f7f7f",
-          "parentId": "8f8f8f8f-8f8f-408f-a8f8-8f8f8f8f8f8f",
-          "locationCode": "DEX-GENT",
-          "companyName": "DEX Gent",
-          "displayName": "DEX Gent",
-          "city": "Gent",
-          "stats": {
-            "activeListings": 45,
-            "totalListings": 52
-          }
-        }
-      ]
+      "updatedAt": "2024-10-05T09:12:01Z"
     }
   ],
   "meta": {
     "total": 5,
+    "profileIds": ["8f8f8f8f-8f8f-408f-a8f8-8f8f8f8f8f8f"],
+    "rootProfileIds": ["8f8f8f8f-8f8f-408f-a8f8-8f8f8f8f8f8f"],
+    "filters": {
+      "parentId": null,
+      "search": null
+    },
     "partner": {
       "id": "partner-id",
       "name": "Partner Name"

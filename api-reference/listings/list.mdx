@@ -9,11 +9,11 @@ description: "Retrieve paginated vehicle listings"
 Retrieve a paginated list of vehicle listings within your partner access scope.
 
 <ParamField query="page" default="1" type="integer">
-  Page number (1-based)
+  Page number (1-based). Alias: `page_number`
 </ParamField>
 
 <ParamField query="pageSize" default="50" type="integer">
-  Number of items per page (max 200)
+  Number of items per page (max 200). Aliases: `page_size`, `limit`
 </ParamField>
 
 <ParamField query="status" default="active" type="string">
@@ -21,22 +21,106 @@ Retrieve a paginated list of vehicle listings within your partner access scope.
 </ParamField>
 
 <ParamField query="updatedSince" type="string">
-  ISO 8601 datetime for incremental sync (e.g., `2024-10-01T00:00:00Z`)
+  ISO 8601 datetime for incremental sync (e.g., `2024-10-01T00:00:00Z`). Alias: `updated_since`
 </ParamField>
 
 <ParamField query="dealerId" type="string">
   Filter by specific dealer profile UUID
 </ParamField>
 
+<ParamField query="locationId" type="string">
+  Alias for filtering by a specific dealer/location profile UUID
+</ParamField>
+
+<ParamField query="profileId" type="string">
+  Alias for filtering by a specific dealer/location profile UUID. Alias: `userId`
+</ParamField>
+
 <ParamField query="parentDealerId" type="string">
-  Filter by parent dealer (includes all child locations)
+  Filter by parent dealer (includes all child locations). Aliases: `parentId`, `companyId`
 </ParamField>
 
 <ParamField query="locationCode" type="string">
-  Filter by location code (case-insensitive)
+  Filter by location code (case-insensitive). Alias: `location_code`
 </ParamField>
 
 ## Response
+
+### Listing Response Field Names
+
+| Field | Description |
+| --- | --- |
+| `id` | Okasie listing UUID |
+| `slug` | Public Okasie listing slug |
+| `listingUrl` | Public Okasie listing URL |
+| `dealerProfileId` | Dealer profile UUID |
+| `externalReference` | Partner listing reference |
+| `externalProvider` | Partner/provider identifier |
+| `title` | Listing title |
+| `description` | Listing description |
+| `status` | `active`, `pending`, `sold`, or `draft` |
+| `price` | Listing price |
+| `currency` | Currency, currently `EUR` |
+| `brand` | Vehicle brand |
+| `model` | Vehicle model |
+| `year` | Build year |
+| `mileage` | Mileage in kilometers |
+| `fuelType` | Fuel type |
+| `transmission` | Transmission type |
+| `bodyType` | Body type |
+| `color` | Exterior color |
+| `doors` | Number of doors |
+| `seats` | Number of seats |
+| `powerKw` | Engine power in kW |
+| `co2Emission` | CO2 emissions in g/km |
+| `emissionClass` | Euro emission class |
+| `firstRegistration` | First registration date |
+| `driveType` | Drive type |
+| `gears` | Number of gears |
+| `interiorColor` | Interior color |
+| `interiorMaterial` | Interior material |
+| `weight` | Vehicle weight in kg |
+| `previousOwners` | Number of previous owners |
+| `serviceHistory` | Whether service history is available |
+| `warranty` | Whether warranty is included |
+| `warrantyMonths` | Warranty duration in months |
+| `co2Type` | CO2 measurement standard |
+| `paintType` | Paint type |
+| `fuelConsumption` | Fuel consumption in L/100km |
+| `variant` | Model variant or trim |
+| `vehicleType` | VAT regime |
+| `conditionTags` | Vehicle condition tags |
+| `engine` | Engine description |
+| `vin` | Vehicle identification number |
+| `carPassUrl` | Public Car-Pass URL or legacy 11-digit certificate number |
+| `location.postalCode` | Listing postal code |
+| `location.city` | Listing city |
+| `location.province` | Listing province |
+| `location.latitude` | Listing latitude |
+| `location.longitude` | Listing longitude |
+| `images[].url` | Image URL |
+| `images[].position` | Image order |
+| `mainImageUrl` | First image URL |
+| `features[].category` | Feature category |
+| `features[].name` | Feature name |
+| `dealer.id` | Dealer profile UUID |
+| `dealer.parentId` | Parent dealer profile UUID |
+| `dealer.locationCode` | Dealer location code |
+| `dealer.companyName` | Dealer company name |
+| `dealer.fullName` | Dealer full name |
+| `dealer.displayName` | Dealer display name |
+| `dealer.email` | Dealer email |
+| `dealer.phone` | Dealer phone |
+| `dealer.address` | Dealer address |
+| `dealer.postalCode` | Dealer postal code |
+| `dealer.city` | Dealer city |
+| `dealer.province` | Dealer province |
+| `dealer.logoUrl` | Dealer logo URL |
+| `dealer.metadata` | Dealer location metadata |
+| `dealer.parent` | Parent dealer summary |
+| `createdAt` | ISO 8601 creation timestamp |
+| `updatedAt` | ISO 8601 last update timestamp |
+| `soldAt` | ISO 8601 sold timestamp, when sold |
 
 <ResponseField name="data" type="array">
   Array of listing objects
@@ -45,11 +129,20 @@ Retrieve a paginated list of vehicle listings within your partner access scope.
     <ResponseField name="id" type="string">
       Okasie listing UUID
     </ResponseField>
+    <ResponseField name="slug" type="string">
+      Public Okasie listing slug
+    </ResponseField>
+    <ResponseField name="listingUrl" type="string">
+      Public Okasie listing URL
+    </ResponseField>
     <ResponseField name="dealerProfileId" type="string">
       Dealer profile UUID
     </ResponseField>
     <ResponseField name="externalReference" type="string">
       Your unique reference
+    </ResponseField>
+    <ResponseField name="externalProvider" type="string">
+      Partner/provider identifier
     </ResponseField>
     <ResponseField name="title" type="string">
       Listing title
@@ -83,6 +176,12 @@ Retrieve a paginated list of vehicle listings within your partner access scope.
     </ResponseField>
     <ResponseField name="images" type="array">
       Array of image objects with `url` and `position`
+    </ResponseField>
+    <ResponseField name="mainImageUrl" type="string">
+      First image URL
+    </ResponseField>
+    <ResponseField name="features" type="array">
+      Array of feature objects with `category` and `name`
     </ResponseField>
     <ResponseField name="dealer" type="object">
       Dealer information

@@ -21,11 +21,11 @@ Retrieve all listings for a specific dealer location. Supports the same filters 
 </ParamField>
 
 <ParamField query="page" type="integer" default="1">
-  Page number (1-based)
+  Page number (1-based). Alias: `page_number`
 </ParamField>
 
 <ParamField query="pageSize" type="integer" default="50">
-  Number of items per page (max 200)
+  Number of items per page (max 200). Aliases: `page_size`, `limit`
 </ParamField>
 
 <ParamField query="status" type="string" default="active">
@@ -33,7 +33,11 @@ Retrieve all listings for a specific dealer location. Supports the same filters 
 </ParamField>
 
 <ParamField query="updatedSince" type="string">
-  ISO 8601 datetime for incremental sync
+  ISO 8601 datetime for incremental sync. Alias: `updated_since`
+</ParamField>
+
+<ParamField query="locationCode" type="string">
+  Filter by location code (case-insensitive). Alias: `location_code`
 </ParamField>
 
 ## Response

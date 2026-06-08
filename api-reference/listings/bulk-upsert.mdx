@@ -19,7 +19,7 @@ The request body can be either:
 1. An array of listing objects
 2. An object with an `items` property containing the array
 
-Each item must include `externalReference` plus all required listing fields.
+Each item must include `externalReference` (or the accepted alias `external_reference`) plus all required listing fields.
 
 <Note>
   All JSON field names, including Car-Pass/carpass aliases like `carPassNumber`, are listed in the [single upsert field reference](/api-reference/listings/upsert#json-field-names).
@@ -31,6 +31,9 @@ Each item must include `externalReference` plus all required listing fields.
   <Expandable title="Item properties">
     <ParamField body="externalReference" type="string" required>
       Your unique reference for this listing
+    </ParamField>
+    <ParamField body="external_reference" type="string">
+      Accepted alias for `externalReference`; prefer `externalReference`
     </ParamField>
     <ParamField body="dealerProfileId" type="string">
       Dealer profile UUID

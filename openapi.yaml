@@ -61,6 +61,13 @@ paths:
             minimum: 1
             default: 1
           example: 1
+        - name: page_number
+          in: query
+          deprecated: true
+          description: Alias for page
+          schema:
+            type: integer
+            minimum: 1
         - name: pageSize
           in: query
           description: Number of items per page (max 200)
@@ -70,6 +77,22 @@ paths:
             maximum: 200
             default: 50
           example: 50
+        - name: page_size
+          in: query
+          deprecated: true
+          description: Alias for pageSize
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+        - name: limit
+          in: query
+          deprecated: true
+          description: Alias for pageSize
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
         - name: status
           in: query
           description: Filter by listing status
@@ -85,9 +108,35 @@ paths:
             type: string
             format: date-time
           example: "2024-10-01T00:00:00Z"
+        - name: updated_since
+          in: query
+          deprecated: true
+          description: Alias for updatedSince
+          schema:
+            type: string
+            format: date-time
         - name: dealerId
           in: query
           description: Filter by specific dealer profile UUID
+          schema:
+            type: string
+            format: uuid
+        - name: locationId
+          in: query
+          description: Alias for filtering by specific dealer/location profile UUID
+          schema:
+            type: string
+            format: uuid
+        - name: profileId
+          in: query
+          description: Alias for filtering by specific dealer/location profile UUID
+          schema:
+            type: string
+            format: uuid
+        - name: userId
+          in: query
+          deprecated: true
+          description: Alias for profileId
           schema:
             type: string
             format: uuid
@@ -97,12 +146,32 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: parentId
+          in: query
+          deprecated: true
+          description: Alias for parentDealerId
+          schema:
+            type: string
+            format: uuid
+        - name: companyId
+          in: query
+          deprecated: true
+          description: Alias for parentDealerId
+          schema:
+            type: string
+            format: uuid
         - name: locationCode
           in: query
           description: Filter by location code (case-insensitive)
           schema:
             type: string
           example: "DEX-GENT"
+        - name: location_code
+          in: query
+          deprecated: true
+          description: Alias for locationCode
+          schema:
+            type: string
       responses:
         "200":
           description: Successful response with paginated listings
@@ -261,10 +330,10 @@ paths:
           $ref: "#/components/responses/RateLimited"
 
   /listings/{externalReference}/status:
-    get:
-      operationId: getListingStatus
-      summary: Get listing status
-      description: Check the current status of a listing by external reference.
+    post:
+      operationId: updateListingStatus
+      summary: Update listing status
+      description: Update the current status of a listing by external reference.
       tags:
         - Listings
       parameters:
@@ -276,9 +345,23 @@ paths:
             type: string
             maxLength: 64
           example: "PARTNER-12345"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [active, pending, sold, draft]
+            example:
+              status: pending
       responses:
         "200":
-          description: Listing status
+          description: Listing status updated
           content:
             application/json:
               schema:
@@ -295,13 +378,18 @@ paths:
                       status:
                         type: string
                         enum: [active, pending, sold, draft]
-                      updatedAt:
-                        type: string
-                        format: date-time
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
 
   /listings/bulk-upsert:
     post:
@@ -379,6 +467,13 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: parent_id
+          in: query
+          deprecated: true
+          description: Alias for parentId
+          schema:
+            type: string
+            format: uuid
         - name: includeChildren
           in: query
           description: Include child locations in results
@@ -438,6 +533,13 @@ paths:
             type: integer
             minimum: 1
             default: 1
+        - name: page_number
+          in: query
+          deprecated: true
+          description: Alias for page
+          schema:
+            type: integer
+            minimum: 1
         - name: pageSize
           in: query
           schema:
@@ -445,6 +547,22 @@ paths:
             minimum: 1
             maximum: 200
             default: 50
+        - name: page_size
+          in: query
+          deprecated: true
+          description: Alias for pageSize
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+        - name: limit
+          in: query
+          deprecated: true
+          description: Alias for pageSize
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
         - name: status
           in: query
           schema:
@@ -456,6 +574,24 @@ paths:
           schema:
             type: string
             format: date-time
+        - name: updated_since
+          in: query
+          deprecated: true
+          description: Alias for updatedSince
+          schema:
+            type: string
+            format: date-time
+        - name: locationCode
+          in: query
+          description: Filter by location code (case-insensitive)
+          schema:
+            type: string
+        - name: location_code
+          in: query
+          deprecated: true
+          description: Alias for locationCode
+          schema:
+            type: string
       responses:
         "200":
           description: Successful response with location listings
@@ -485,6 +621,15 @@ components:
           type: string
           format: uuid
           description: Okasie listing ID
+        slug:
+          type: string
+          nullable: true
+          description: Public Okasie listing slug
+        listingUrl:
+          type: string
+          nullable: true
+          format: uri
+          description: Public Okasie listing URL
         dealerProfileId:
           type: string
           format: uuid
@@ -592,9 +737,6 @@ components:
         variant:
           type: string
           description: Model variant/trim level
-        condition:
-          type: string
-          description: Vehicle condition
         conditionTags:
           type: array
           items:
@@ -626,6 +768,11 @@ components:
                 format: uri
               position:
                 type: integer
+        mainImageUrl:
+          type: string
+          nullable: true
+          format: uri
+          description: First image URL
         features:
           type: array
           items:
@@ -888,18 +1035,31 @@ components:
                   url:
                     type: string
                     format: uri
+                  imageUrl:
+                    type: string
+                    format: uri
+                    description: Alias for url
                   position:
                     type: integer
 
     BulkListingItem:
       allOf:
-        - type: object
-          required:
-            - externalReference
-          properties:
-            externalReference:
-              type: string
-              description: Your unique reference for this listing
+        - oneOf:
+            - type: object
+              required:
+                - externalReference
+              properties:
+                externalReference:
+                  type: string
+                  description: Your unique reference for this listing
+            - type: object
+              required:
+                - external_reference
+              properties:
+                external_reference:
+                  type: string
+                  deprecated: true
+                  description: Alias for externalReference. Prefer externalReference.
         - $ref: "#/components/schemas/ListingInput"
 
     Dealer:
@@ -914,6 +1074,8 @@ components:
         locationCode:
           type: string
         companyName:
+          type: string
+        fullName:
           type: string
         displayName:
           type: string
@@ -945,6 +1107,8 @@ components:
               type: string
             companyName:
               type: string
+            fullName:
+              type: string
             displayName:
               type: string
 
@@ -961,6 +1125,8 @@ components:
           type: string
         companyName:
           type: string
+        fullName:
+          type: string
         displayName:
           type: string
         email:
@@ -975,6 +1141,26 @@ components:
           type: string
         province:
           type: string
+        logoUrl:
+          type: string
+          format: uri
+        metadata:
+          type: object
+        parent:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+              format: uuid
+            locationCode:
+              type: string
+            companyName:
+              type: string
+            fullName:
+              type: string
+            displayName:
+              type: string
         isRoot:
           type: boolean
         stats:
@@ -984,10 +1170,13 @@ components:
               type: integer
             totalListings:
               type: integer
-        children:
-          type: array
-          items:
-            $ref: "#/components/schemas/Location"
+            avgActivePrevMonth:
+              type: number
+              nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
 
     ListingsResponse:
       type: object
@@ -1014,6 +1203,8 @@ components:
                   type: object
             filters:
               type: object
+            profileScope:
+              type: object
 
     LocationsResponse:
       type: object
@@ -1027,6 +1218,19 @@ components:
           properties:
             total:
               type: integer
+            profileIds:
+              type: array
+              items:
+                type: string
+                format: uuid
+            rootProfileIds:
+              type: array
+              nullable: true
+              items:
+                type: string
+                format: uuid
+            filters:
+              type: object
             partner:
               type: object
 
@@ -1099,6 +1303,18 @@ components:
                     type: string
                   created:
                     type: boolean
+                  warnings:
+                    type: object
+                    properties:
+                      skippedImages:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            source:
+                              type: string
+                            reason:
+                              type: string
             errors:
               type: array
               items:
@@ -1114,6 +1330,17 @@ components:
                     type: string
                   status:
                     type: integer
+                  issues:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                        message:
+                          type: string
+                        code:
+                          type: string
 
     Pagination:
       type: object

@@ -39,6 +39,7 @@ Use `carPassUrl` for Car-Pass. The search term `carpass` is intentionally listed
 | Field | Required | Description |
 | --- | --- | --- |
 | `externalReference` | Yes for bulk upsert | Your unique listing reference. For single upsert this is the path parameter |
+| `external_reference` | Alias | Accepted bulk upsert alias for `externalReference`; prefer `externalReference` |
 | `dealerProfileId` | Yes, unless `dealerLocationCode` is used | Dealer profile UUID |
 | `dealerLocationCode` | Yes, unless `dealerProfileId` is used | Dealer location code from the Okasie dashboard |
 | `status` | No | `active`, `pending`, `sold`, or `draft` |
@@ -98,6 +99,7 @@ Use `carPassUrl` for Car-Pass. The search term `carpass` is intentionally listed
 | `features[].feature` | No | Accepted alias for feature name |
 | `images[]` | No | Image URL string |
 | `images[].url` | No | Image URL |
+| `images[].imageUrl` | No | Accepted alias for `images[].url` |
 | `images[].position` | No | Image order |
 
 <ParamField body="dealerProfileId" type="string">
@@ -293,7 +295,7 @@ Use `carPassUrl` for Car-Pass. The search term `carpass` is intentionally listed
 </ParamField>
 
 <ParamField body="images" type="array">
-  Array of image URLs or objects with `url` and `position`. Images are automatically mirrored to Okasie storage.
+  Array of image URLs or objects with `url`/`imageUrl` and `position`. Images are automatically mirrored to Okasie storage.
 </ParamField>
 
 ## Response
