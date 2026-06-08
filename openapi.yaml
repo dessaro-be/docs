@@ -192,6 +192,7 @@ paths:
               condition: "used"
               vehicleType: "margin"
               firstRegistration: "2021-03"
+              carPassUrl: "https://public.car-pass.be/vhr/example"
               postalCode: "9000"
               city: "Gent"
               province: "Oost-Vlaanderen"
@@ -335,6 +336,7 @@ paths:
                   status: "active"
                   title: "Jeep Compass"
                   price: 18500
+                  carPassUrl: "https://public.car-pass.be/vhr/example"
                   postalCode: "9000"
                   city: "Gent"
                   province: "Oost-Vlaanderen"
@@ -343,6 +345,7 @@ paths:
                   status: "pending"
                   title: "Renault Trafic"
                   price: 26990
+                  carPassUrl: "12345678901"
                   postalCode: "9000"
                   city: "Gent"
                   province: "Oost-Vlaanderen"
@@ -535,6 +538,11 @@ components:
         vin:
           type: string
           maxLength: 17
+        carPassUrl:
+          type: string
+          nullable: true
+          description: Public Car-Pass URL from public.car-pass.be or car-pass.be, or a legacy 11-digit certificate number
+          example: "https://public.car-pass.be/vhr/example"
         # Additional vehicle details
         engine:
           type: string
@@ -707,6 +715,12 @@ components:
         vin:
           type: string
           maxLength: 32
+        carPassUrl:
+          type: string
+          maxLength: 2048
+          nullable: true
+          description: Canonical Car-Pass field. Accepts a public.car-pass.be or car-pass.be URL, or a legacy 11-digit certificate number. Input aliases carPass, car_pass_url, and carPassNumber are also accepted.
+          example: "https://public.car-pass.be/vhr/example"
         postalCode:
           type: string
           maxLength: 32

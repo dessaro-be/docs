@@ -75,6 +75,9 @@ Retrieve a paginated list of vehicle listings within your partner access scope.
     <ResponseField name="mileage" type="integer">
       Kilometers
     </ResponseField>
+    <ResponseField name="carPassUrl" type="string">
+      Public Car-Pass URL or legacy 11-digit certificate number, when provided
+    </ResponseField>
     <ResponseField name="location" type="object">
       Location details with `postalCode`, `city`, `province`, `latitude`, `longitude`
     </ResponseField>
@@ -145,6 +148,7 @@ curl -X GET "https://www.okasie.be/api/external/v1/listings?pageSize=50&status=a
       "fuelType": "petrol",
       "transmission": "automatic",
       "bodyType": "hatchback",
+      "carPassUrl": "https://public.car-pass.be/vhr/example",
       "location": {
         "postalCode": "9000",
         "city": "Gent",
